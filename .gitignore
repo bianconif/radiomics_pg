@@ -1,0 +1,5 @@
+*.wpr
+*.wpu
+*.lnk
+/output/*
+/__pycache__/*
