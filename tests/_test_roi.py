@@ -19,7 +19,6 @@ tm = TriangularMesh.by_marching_cubes(roi_1)
 tm.show()
 
 print(f'The voxel volume of the ROI is: {roi_1.get_voxel_volume()}')
-print(f'The surface area of the mesh is: {tm.get_surface_area()}')
-print(f'The volume of the mesh is: {tm.get_volume()}')
-print(f'The surface area of the ROI is: {roi_1.get_surface_area()}')
+print(f'The volume of the ROI (from triangular mesh) is: {roi_1.get_mesh_volume()}')
+print(f'The surface area of the ROI (from triangular mesh) is: {roi_1.get_surface_area()}')
 a = 0

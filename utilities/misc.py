@@ -171,6 +171,17 @@ class Roi():
         area = self.get_mask_mesh().get_surface_area()
         return area
     
+    def get_mesh_volume(self):
+        """Returns the roi volume computed on the triangulara mesh
+        
+        Returns
+        -------
+        mesh_volume : float
+            The volume.
+        """
+        mesh_volume = self.get_mask_mesh().get_volume()
+        return mesh_volume        
+    
     def get_voxel_volume(self):
         """Returns the total volume as the sum of the volume of each voxel
         
