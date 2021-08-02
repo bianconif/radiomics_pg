@@ -1,5 +1,12 @@
 import numpy as np
 
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+from skimage.measure import marching_cubes, mesh_surface_area
+
+
+
 def cross_moment(coordinates_a, coordinates_b, mass_distro, order_a = 2, 
                  order_b = 2, central = False):
     """Central cross-moment of a discrete mass distribution
@@ -127,7 +134,7 @@ def bounding_box(data):
     
     return bbox, data_slice, idxs
 
-def inertia_tensor(x, y, z, mass_distro, normalise_mass = False):
+def inertia_tensor(x, y, z, mass_distro, normalise_mass = False, central = True):
     """Inertia tensor of a discrete mass ditribution
     
     Parameters
@@ -138,6 +145,8 @@ def inertia_tensor(x, y, z, mass_distro, normalise_mass = False):
         The mass of each point.
     normalise_mass : bool
         If True normalise the mass distribution to sum 1.
+    central : bool
+        Whether the tensor should be computed around the centroid.
         
     Returns
     -------
@@ -157,20 +166,267 @@ def inertia_tensor(x, y, z, mass_distro, normalise_mass = False):
     
     if normalise_mass:
         mass_distro = mass_distro/np.sum(mass_distro[:])
+        
+    if central:
+        x = x - centroid(x, mass_distro)
+        y = y - centroid(y, mass_distro)
+        z = z - centroid(z, mass_distro)
     
     #Compute the inertia tensor
-    i_x = np.sum((y**2 + z**2)*mass_distro)
-    i_y = np.sum((x**2 + z**2)*mass_distro)
-    i_z = np.sum((x**2 + y**2)*mass_distro)
-    i_xy = np.sum((x*y)*mass_distro)
-    i_yz = np.sum((y*z)*mass_distro)
-    i_xz = np.sum((x*z)*mass_distro)
-    itensor = np.array([[i_x, -i_xy, -i_xz],
-                        [-i_xy, i_y, -i_yz],
-                        [-i_xz, -i_yz, i_z]])
+    i_xx = np.sum((y**2 + z**2)*mass_distro)
+    i_yy = np.sum((x**2 + z**2)*mass_distro)
+    i_zz = np.sum((x**2 + y**2)*mass_distro)
+    i_xy = -np.sum((x*y)*mass_distro)
+    i_yz = -np.sum((y*z)*mass_distro)
+    i_xz = -np.sum((x*z)*mass_distro)
+    itensor = np.array([[i_xx, i_xy, i_xz],
+                        [i_xy, i_yy, i_yz],
+                        [i_xz, i_yz, i_zz]])
     
     #Compute the principal moments
     principal_moments, _ = np.linalg.eig(itensor)
     principal_moments = np.sort(principal_moments)
-    a = 0
+    principal_moments = np.flip(principal_moments)
+    return itensor, principal_moments
+    
+def zingg_shape(x, y, z, mass_distro):
+    """Zingg shape parameters and classification
+    
+    Parameters
+    ----------
+    x, y, z : nparray of numeric
+        The coordinates of each point of the mass distribution.
+    mass_distro : nparray of numeric
+        The mass of each point.
+        
+    Returns
+    -------
+    r1, r2 : float
+        Respectively b/a and c/b, where a, b and c indicate the principal 
+        inertia moments of the mass distribution sorted in descending order 
+        (a > b > c).
+    zingg_class : int (possible values = 0, 1, 2 and 3)
+        The Zingg class:
+            0 -> rod (prolate)
+            1 -> blade (oblate)
+            2 -> sphere (equant)
+            3 -> disc
+         
+    References
+    ----------
+    [1] Domokos, G., Sipos, A., Szabo, T., Varkonyi, P.
+        Pebbles, Shapes, and Equilibria
+        (2010) Mathematical Geosciences, 42 (1), pp. 29-47. 
+    """
+    
+    _, principal_moments = inertia_tensor(x, y, z, mass_distro, 
+                                          normalise_mass = True)
+    
+    r1 = principal_moments[1]/principal_moments[0]
+    r2 = principal_moments[2]/principal_moments[1]
+    
+    condition_1 = (r1 >= 2/3)
+    condition_2 = (r2 >= 2/3)
+    zingg_class = 2*condition_1 + condition_2
+    
+    return r1, r2, zingg_class
+
+class TriangularMesh():
+    """Wrapper for triangular mesh"""
+    
+    @staticmethod
+    def by_marching_cubes(roi):
+        """Generate a triangular mesh from a given ROI
+        
+        Parameters
+        ----------
+        roi : Roi
+            The ROI object
+            
+        Returns
+        -------
+        tmesh : TriangularMesh
+            The triangular mesh
+        """
+        mask = roi.get_mask()
+        spacing_x, spacing_y, spacing_z = roi.get_average_spacing()
+        spacing = (spacing_y, spacing_x, spacing_z)
+        
+        #Pad zeros around the mask to avoid border effects
+        padded_mask = np.pad(array = mask, pad_width = 1, mode = 'constant')
+        
+        verts, faces, normals, _ = marching_cubes(volume = padded_mask, 
+                                                  level = 0.5,
+                                                  spacing = spacing, 
+                                                  allow_degenerate = False)
+        
+        return TriangularMesh(verts, faces, normals)
+        
+    def __init__(self, verts, faces, normals):
+        """
+        Parameters
+        ----------
+        verts : (V, 3) nparray
+            Spatial coordinates of the vertices unique mesh vertices. 
+        faces : (F, 3) nparray
+            Triangular faces via referencing vertex indices from verts. 
+        normals : (V, 3) array
+            The normal direction at each vertex, as calculated from the data.
+        """
+        self.verts = verts
+        self.faces = faces
+        self.normals = normals
+        
+    def show(self):
+        """Display the mesh
+        
+        Sourced from 
+        """
+        # Display the triangular mesh using Matplotlib. This can also be done
+        # with mayavi (see skimage.measure.marching_cubes_lewiner docstring).
+        fig = plt.figure(figsize=(10, 10))
+        ax = fig.add_subplot(111, projection='3d')
+        
+        # Fancy indexing: `verts[faces]` to generate a collection of triangles
+        mesh = Poly3DCollection(self.verts[self.faces])
+        mesh.set_edgecolor('k')
+        ax.add_collection3d(mesh)
+        
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+        ax.set_zlabel("z")
+        
+        #Grant extra space around the mesh for plotting
+        extra_margin_frac = 0.30
+        min_ = [np.min(self.verts[:,i]) for i in range(3)]
+        max_ = [np.max(self.verts[:,i]) for i in range(3)]
+        spread = np.abs(np.subtract(max_, min_))
+        upper_limits = [M + spread[i]*extra_margin_frac for i, M in enumerate(max_)]
+        lower_limits = [m - spread[i]*extra_margin_frac for i, m in enumerate(min_)]
+        
+        xlims = (lower_limits[0], upper_limits[0])
+        ylims = (lower_limits[1], upper_limits[1])
+        zlims = (lower_limits[2], upper_limits[2])
+        
+        ax.set_xlim(*xlims)
+        ax.set_ylim(*ylims)
+        ax.set_zlim(*zlims)
+        
+        plt.tight_layout()
+        plt.show()  
+        
+    def _compute_surface_area(self):
+        """Computes the area of the triangular mesh and stores is as an attribute
+        """
+        self.surface_area = mesh_surface_area(self.verts, self.faces)
+        
+    def _compute_volume(self):
+        """Computes the volume of the triangular mesh and stores it as an 
+        attribute"""
+        
+        #Computes the volume of each tetrahedron whose vertices are the vertices 
+        #of each triangular face of the mesh and the origin of the reference system. 
+        #Denote with O, A, B and C respectively the origin and vertices of each 
+        #tetrahedron. Let also n be the normal of ABC and G the centroid. 
+        #The volume of the tetrahedron is considered positive if dot(OG, n) > 0; 
+        #negative otherwise.  
+        
+        #First vertex of the triangular face
+        xA = self.verts[self.faces[:,0],0]
+        yA = self.verts[self.faces[:,0],1]
+        zA = self.verts[self.faces[:,0],2]
+        
+        #Second vertex of the triangular face
+        xB = self.verts[self.faces[:,1],0]
+        yB = self.verts[self.faces[:,1],1]
+        zB = self.verts[self.faces[:,1],2]
+        
+        #Third vertex of the triangular face
+        xC = self.verts[self.faces[:,2],0]
+        yC = self.verts[self.faces[:,2],1]
+        zC = self.verts[self.faces[:,2],2]
+        
+        #Triangles' centroids
+        G = np.zeros((self.faces.shape[0],3))
+        origin = np.zeros((self.faces.shape[0],3))
+        G[:,0] = (xA + xB + xC)/3 
+        G[:,1] = (yA + yB + yC)/3 
+        G[:,2] = (zA + zB + zC)/3        
+                        
+        #Compute the volume of each tetrahedron
+        AB = np.zeros((self.faces.shape[0],3))
+        AO = np.zeros((self.faces.shape[0],3))
+        AC = np.zeros((self.faces.shape[0],3))
+        AB[:,0] = xB - xA
+        AB[:,1] = yB - yA
+        AB[:,2] = zB - zA
+        AC[:,0] = xC - xA
+        AC[:,1] = yC - yA
+        AC[:,2] = zC - zA
+        AO[:,0] = 0 - xA
+        AO[:,1] = 0 - yA
+        AO[:,2] = 0 - zA
+        
+        #Volume of each tetrahedron = |AO . (AB x AC)|
+        AB_outer_AC = np.zeros((self.faces.shape[0],3))
+        AB_outer_AC[:,0] =   (AB[:,1]*AC[:,2] - AB[:,2]*AC[:,1])
+        AB_outer_AC[:,1] = - (AB[:,0]*AC[:,2] - AB[:,2]*AC[:,0])
+        AB_outer_AC[:,2] =   (AB[:,0]*AC[:,1] - AB[:,1]*AC[:,0])
+        
+        #Compute the dot product between the origin-centroid vector and the
+        #face normal
+        dot_prods = np.einsum('ij,ij->i', AB_outer_AC, AO)
+        
+        #From the dot products get the sign of the volume of each tetrahedron
+        signs = np.where(dot_prods > 0, 
+                         np.ones(dot_prods.shape[0]),
+                         -1 * np.ones(dot_prods.shape[0]))        
+        
+        unsigned_vols = np.abs(np.einsum('ij,ij->i', AO, AB_outer_AC)/6)
+        signed_vols = signs * unsigned_vols
+        
+        #Total volume
+        self.volume = np.sum(signed_vols)
+        #***********************************************
+        #***********************************************
+        #*********************************************** 
+        
+    def get_surface_area(self):
+        """Returns the surface area. Does not recompute it if cached.
+        
+        Returns
+        -------
+        area : float
+            The surface area.
+        """
+        area = None
+        try:
+            self.surface_area
+        except AttributeError:
+            self._compute_surface_area()
+        
+        area = self.surface_area            
+        return area
+    
+    def get_volume(self):
+        """Returns the volume. Does not recompute it if cached
+        
+        Returns
+        -------
+        volume : float
+            The volume.
+        """     
+        volume = None
+        try:
+            self.volume
+        except AttributeError:
+            self._compute_volume()
+        
+        volume = self.volume            
+        return volume            
+             
+        
+            
+            
+
     

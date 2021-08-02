@@ -46,6 +46,10 @@ def read(folder_name):
     -----
     The returned data, x, y and z have all the same size. It is assumed that the
     original dicom data are in the default human standard anatomical position.
+    The data array is organised as follows:
+        0th axis -> y
+        1st axis -> x
+        3rd axis -> z
     """
     
     unsorted_list = []

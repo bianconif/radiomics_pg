@@ -1,5 +1,6 @@
 *.wpr
 *.wpu
 *.lnk
-/output/*
-/__pycache__/*
+output/*
+utilities/__pycache__/*
+__pycache__/*
