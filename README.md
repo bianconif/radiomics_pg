@@ -1,7 +1,6 @@
 # radiomics_pg
 
 ## Description and usage
-
 A tiny library for radiomics calculations.
 
 ## License and data usage

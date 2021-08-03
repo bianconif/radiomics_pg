@@ -248,4 +248,5 @@ class Roi():
             r1, r2, zingg_class = zingg_shape(self.x, self.y, self.z, self.mask)
             
         return r1, r2, zingg_class
+
             
