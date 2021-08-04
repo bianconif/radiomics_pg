@@ -182,14 +182,18 @@ class Roi():
         mesh_volume = self.get_mask_mesh().get_volume()
         return mesh_volume        
     
-    def get_voxel_volume(self):
-        """Returns the total volume as the sum of the volume of each voxel
+    def get_roi_volume(self):
+        """Returns the volume of the roi, that is of the axis-aligned bounding box
         
         Returns
         -------
-        voxel_volume : float
-            The voxel volume.
+        volumes : nparray (S,C,A)
+            The volume of each voxel in the roi. The axes respectively represent
+            the sagittal, coronal and axial direction.
+        overall_volume : float
+            The overall volume (sum of the volumes of each voxel).
         """
+        
         voxel_side_length_x = np.zeros(self.signal.shape)
         voxel_side_length_y = np.zeros(self.signal.shape)
         voxel_side_length_z = np.zeros(self.signal.shape)
@@ -207,11 +211,25 @@ class Roi():
         
         #Compute the volumes of all the voxels
         volumes = voxel_side_length_x * voxel_side_length_y * voxel_side_length_z
+        overall_volume = np.sum(volumes.flatten())
         
-        #Only retain the volumes within the mask
+        return volumes, overall_volume        
+    
+    def get_voxel_volume(self):
+        """Returns the total volume as the sum of the volume of each voxel for
+        which the corresponding mask value is True.
+        
+        Returns
+        -------
+        voxel_volume : float
+            The voxel volume.
+        """
+        
+        volumes, _ = self.get_roi_volume()
         valid_volumes = self.get_mask() * volumes
+        voxel_volume = np.sum(valid_volumes.flatten())
         
-        return np.sum(valid_volumes.flatten())
+        return voxel_volume
         
     def zingg_shape(self, on_signal = True):
         """Zingg shape parameters and classification
