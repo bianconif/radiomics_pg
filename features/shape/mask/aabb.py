@@ -9,10 +9,14 @@ References
 [2] Blott, S.J., Pye, K.
     Particle shape: A review and new methods of characterization and classification
     (2008) Sedimentology, 55 (1), pp. 31-63
+[3] Benn, D.I., Ballantyne, C.K.
+    The description and representation of particle shape
+    (1993) Earth Surface Processes and Landforms, 18 (7), pp. 665-672. 
 """
 
 import numpy as np
 
+from features.shape.functions import shape_index
 from utilities.misc import Roi
 
 def volume_density(roi):
@@ -64,3 +68,36 @@ def zingg_ratios(roi):
     lbt = length_breadth_thickness(roi)
     zratios = (lbt[1]/lbt[0], lbt[2]/lbt[1])
     return zratios
+
+def disc_rod_index(roi):
+    """The disc-rod index as defined in [3, Tab. 1]
+    
+    Parameters
+    ----------
+    roi : Roi
+        The input roi.
+        
+    Returns
+    -------
+    dr_index : float
+        The disc-rod index (dimensionless units).
+    """   
+    lbt = length_breadth_thickness(roi)
+    return shape_index(*lbt, 'disc-rod')
+
+def oblate_prolated_index(roi):
+    """The oblate-prolate index as defined in [3, Tab. 1]
+    
+    Parameters
+    ----------
+    roi : Roi
+        The input roi.
+        
+    Returns
+    -------
+    op_index : float
+        The oblate-prolate index (dimensionless units).
+    """   
+    lbt = length_breadth_thickness(roi)
+    return shape_index(*lbt, 'oblate-prolate')
+    

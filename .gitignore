@@ -4,4 +4,5 @@
 output/*
 utilities/__pycache__/*
 features/shape/mask/__pycache__/*
+features/shape/__pycache__/*
 __pycache__/*
