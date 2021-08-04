@@ -1,5 +1,12 @@
 """Morphological (shape) features based on the ROI mask (signal intensity
-is not considered)"""
+is not considered)
+
+References
+----------
+[1] Zwanenburg, A. et al. 
+    The image biomarker standardisation initiative (rev. v11)
+    https://arxiv.org/abs/1612.07003
+"""
 
 import numpy as np
 

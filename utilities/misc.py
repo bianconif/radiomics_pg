@@ -182,6 +182,21 @@ class Roi():
         mesh_volume = self.get_mask_mesh().get_volume()
         return mesh_volume        
     
+    def get_roi_dimensions(self):
+        """Returns the dimensions of the ROI along the axial, sagittal and coronal
+        axis
+        
+        Returns
+        -------
+        roi_dimensions : float (3)
+            The dimensions of the ROI respectively along the coronal, sagittal
+            and axial directions.
+        """
+        roi_dimensions = (np.abs(self.x[-1,-1,-1] - self.x[0,0,0]),
+                          np.abs(self.y[-1,-1,-1] - self.y[0,0,0]),
+                          np.abs(self.z[-1,-1,-1] - self.z[0,0,0]))
+        return roi_dimensions
+    
     def get_roi_volume(self):
         """Returns the volume of the roi, that is of the axis-aligned bounding box
         
