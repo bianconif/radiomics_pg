@@ -3,4 +3,5 @@
 *.lnk
 output/*
 utilities/__pycache__/*
+features/shape/mask/__pycache__/*
 __pycache__/*

@@ -11,8 +11,8 @@ References
 from utilities.misc import Roi
 
 def volume_density(roi):
-    """Ratio between the volume of mask and the volume of the axis-aligned
-    bounding box.
+    """Ratio between the volume of the mask and the volume of the axis-aligned
+    bounding box. Also referred to as 'Rectangular fit'.
     
     Parameters
     ----------
@@ -24,3 +24,5 @@ def volume_density(roi):
     vdensity : float
         The volume density (dimensionless units).
     """
+    _, roi_volume = roi.get_roi_volume()
+    return roi.get_voxel_volume()/roi_volume
