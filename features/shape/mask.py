@@ -81,3 +81,23 @@ def compactness_1(roi):
     compactness = V / (np.pi**2 * A**(3/2))
     return compactness
 
+def sphericity(roi):
+    """Ratio between the surface area of a sphere with the same volume as the given 
+    ROI and the surface area of the ROI (paragraph 3.1.8 of [1]).
+    
+    Parameters
+    ----------
+    roi : Roi
+        The input roi.
+
+    Returns
+    -------
+    sphericity : float
+        The sphericity (dimensionless units).
+    """
+    
+    A = roi.get_surface_area()
+    V = roi.get_mesh_volume()
+    sphericity = ((36 * np.pi * V ** 2) ** 1/3)/A
+    return sphericity
+

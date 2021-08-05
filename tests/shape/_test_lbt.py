@@ -21,13 +21,3 @@ for source_file in source_files:
             value = lbt_index(roi, index, mode)
             print(f' {value:.1f} ({mode})', end = '')
         print('\r', end = '')
-    
-    a = 0
-
-#features = {'surface_to_volume_ratio' : surface_to_volume_ratio,
-            #'compactness_1' : compactness_1,
-            #'length_breatdh_thickness' : length_breadth_thickness, 
-            #'zingg_ratios' : zingg_ratios,
-            #'disc_rod_index' : disc_rod_index,
-            #'oblate-prolated-index' : oblate_prolated_index,
-            #'volume_density' : volume_density}

@@ -122,10 +122,13 @@ def bounding_box(data):
     lower_bounds = np.min(where_non_zero, axis = 0)
     upper_bounds = np.max(where_non_zero, axis = 0)
     
+    #Add 1 to the upper bounds for correct slicing
+    upper_bounds += 1
+    
     bbox = np.zeros((len(lower_bounds), 2), dtype = np.int)
     bbox[:,0] = lower_bounds
     bbox[:,1] = upper_bounds
-    
+        
     slice_indices = list()
     for i in range(bbox.shape[0]):
         slice_indices.append(bbox[i,:].tolist())
