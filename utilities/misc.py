@@ -4,7 +4,8 @@ import numpy as np
 
 from utilities.nii import read as read_nii
 from utilities.dicom import read as read_dicom
-from utilities.geometry import bounding_box, zingg_shape, TriangularMesh
+from utilities.geometry import bounding_box, zingg_shape, TriangularMesh,\
+     inertia_tensor
 
 class Roi():
     """Read and and save regions (volumes) of interest"""
@@ -180,7 +181,34 @@ class Roi():
             The volume.
         """
         mesh_volume = self.get_mask_mesh().get_volume()
-        return mesh_volume        
+        return mesh_volume    
+    
+    def get_principal_moments_mask(self):
+        """Principal moments of inertia computed on the mask (non signal-weighted)
+        
+        Returns
+        -------
+        principal_moments : nparray of float (3)
+            The principal moments of inertia sorted in descending order of 
+            magnitude: [I1, I2, I3]
+        """
+        _, principal_moments = inertia_tensor(self.x, self.y, self.z, 
+                                              self.get_mask())
+        return principal_moments
+    
+    def get_principal_moments_signal(self):
+        """Principal moments of inertia computed on the signal-weighted mask
+        
+        Returns
+        -------
+        principal_moments : nparray of float (3)
+            The principal moments of inertia sorted in descending order of 
+            magnitude: [I1, I2, I3]
+        """
+        _, principal_moments = inertia_tensor(
+            self.x, self.y, self.z, 
+            np.multiply(self.get_signal(), self.get_mask()))   
+        return principal_moments
     
     def get_roi_dimensions(self):
         """Returns the dimensions of the ROI along the axial, sagittal and coronal
