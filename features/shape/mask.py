@@ -98,6 +98,6 @@ def sphericity(roi):
     
     A = roi.get_surface_area()
     V = roi.get_mesh_volume()
-    sphericity = ((36 * np.pi * V ** 2) ** 1/3)/A
+    sphericity = ((36 * np.pi * V ** 2) ** (1/3))/A
     return sphericity
 

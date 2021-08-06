@@ -2,9 +2,9 @@ import pickle
 
 import numpy as np
 
-from utilities.nii import read as read_nii
-from utilities.dicom import read as read_dicom
-from utilities.geometry import bounding_box, zingg_shape, TriangularMesh,\
+from radiomics_pg.utilities.nii import read as read_nii
+from radiomics_pg.utilities.dicom import read as read_dicom
+from radiomics_pg.utilities.geometry import bounding_box, zingg_shape, TriangularMesh,\
      inertia_tensor
 
 class Roi():
