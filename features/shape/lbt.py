@@ -45,7 +45,9 @@ def lbt_index(roi, index, mode):
     #Compute length, breadth and thickness
     l, b, t = None, None, None
     if mode == 'aabb':
-        l, b, t = roi.get_roi_dimensions()
+        dims = list(roi.get_roi_dimensions())
+        dims.sort(reverse = True)
+        l, b, t = dims
     elif mode == 'mask':
         l, b, t = roi.get_principal_moments_mask()
     elif  mode == 'signal':

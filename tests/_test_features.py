@@ -1,8 +1,8 @@
-from utilities.misc import Roi
+from radiomics_pg.utilities.misc import Roi
 
-from features.shape.mask.aabb import volume_density, length_breadth_thickness,\
-     zingg_ratios, disc_rod_index, oblate_prolated_index
-from features.shape.mask.others import compactness_1, surface_to_volume_ratio
+from radiomics_pg.features.shape.mask import volume_density, compactness_1,\
+     surface_to_volume_ratio, length_breadth_thickness
+from radiomics_pg.features.shape.lbt import disc_rod_index, oblate_prolated_index
 
 patient_id = '115GA'
     
