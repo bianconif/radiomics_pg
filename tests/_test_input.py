@@ -3,9 +3,9 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-from utilities.geometry import bounding_box, centroid
-from utilities.dicom import read as read_dicom
-from utilities.nii import read as read_nii
+from radiomics_pg.utilities.geometry import bounding_box, centroid
+from radiomics_pg.utilities.dicom import read as read_dicom
+from radiomics_pg.utilities.nii import read as read_nii
 
 out_folders = ['tests/input/signal', 'tests/input/mask']
 for folder in out_folders:

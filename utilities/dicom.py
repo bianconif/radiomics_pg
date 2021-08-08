@@ -88,7 +88,7 @@ def read(folder_name):
         #Update the data and coordinate matrices
         data[:,:,i] = ds.pixel_array
         x[idxs[0],idxs[1],i] =  column_spacing * (idxs[1] + 0.5)
-        y[idxs[0],idxs[1],i] =  column_spacing * (idxs[0] + 0.5)
+        y[idxs[0],idxs[1],i] =  row_spacing * (idxs[0] + 0.5)
         z[:,:,i] = slice_location
           
     #Sort the matrices by slice location
