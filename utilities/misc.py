@@ -72,14 +72,44 @@ class Roi():
         _, mask_slice, slice_idxs = bounding_box(mask)
         self.mask = mask[slice_idxs]   
         
-        #Read the signal
+        #Read and store the signal
         signal, x, y, z, x_length, y_length, z_length = read_dicom(scan_folder)
         self.signal = signal[slice_idxs]
-        self.x = x[slice_idxs]
-        self.y = y[slice_idxs]
-        self.z = z[slice_idxs]
+        
+        #Read and store the coordinates of the centroids and the side length of
+        #each voxel. The 'geometry' attribute is arranged as follows:
+        #self.geometry[:,:,:,0-2] -> x, y and z coordinates of the centroid of
+        #each voxel
+        #self.geometry[:,:,:,3-5] -> side length of each voxel along x, y and z
+        self.geometry = np.zeros((*self.signal.shape, 6))
+        self.geometry[:,:,:,0] = x[slice_idxs]
+        self.geometry[:,:,:,1] = y[slice_idxs]
+        self.geometry[:,:,:,2] = z[slice_idxs]
+        self.geometry[:,:,:,3] = x_length[slice_idxs]
+        self.geometry[:,:,:,4] = y_length[slice_idxs]
+        self.geometry[:,:,:,5] = z_length[slice_idxs]        
         
         self.empty = False
+    
+    def get_voxel_centroid_coordinates(self):
+        """Coordinates of the centroid of each voxel
+        
+        Returns
+        -------
+        x, y, z : nparray of float
+            The coordinates of the centroid of each voxel
+        """
+        return [self.geometry[:,:,:,i] for i in (0,1,2)]
+    
+    def get_voxel_dims(self):
+        """Dimensions of each voxel along x, y and z
+        
+        Returns
+        -------
+        x_length, y_length, z_length : nparray of float
+            The dimension (side length) of each voxel along x, y and z
+        """
+        return [self.geometry[:,:,:,i] for i in (3,4,5)]
     
     def get_signal(self):
         """Return the signal volume"""
@@ -97,9 +127,10 @@ class Roi():
         avg_spacing : float (3)
             The average spacing along x, y and z
         """
-        x_spacing = np.abs(np.diff(self.x, n = 1, axis = 1))
-        y_spacing = np.abs(np.diff(self.y, n = 1, axis = 0))
-        z_spacing = np.abs(np.diff(self.z, n = 1, axis = 2))
+        x, y, z = self.get_voxel_centroid_coordinates()
+        x_spacing = np.abs(np.diff(x, n = 1, axis = 1))
+        y_spacing = np.abs(np.diff(y, n = 1, axis = 0))
+        z_spacing = np.abs(np.diff(z, n = 1, axis = 2))
         avg_spacing = (np.mean(x_spacing.flatten()), 
                        np.mean(y_spacing.flatten()),
                        np.mean(z_spacing.flatten()))
@@ -119,9 +150,7 @@ class Roi():
         with open(destination, "wb") as f:
             pickle.dump((self.mask, 
                          self.signal, 
-                         self.x,
-                         self.y,
-                         self.z,
+                         self.geometry,
                          self.diagnosis), f)           
             
     def _load(self, source):
@@ -134,7 +163,7 @@ class Roi():
         """
         
         with open(source, 'rb') as f:
-            self.mask, self.signal, self.x, self.y, self.z, self.diagnosis =\
+            self.mask, self.signal, self.geometry, self.diagnosis =\
                 pickle.load(f)
              
         self.empty = False
@@ -237,23 +266,9 @@ class Roi():
             The overall volume (sum of the volumes of each voxel).
         """
         
-        voxel_side_length_x = np.zeros(self.signal.shape)
-        voxel_side_length_y = np.zeros(self.signal.shape)
-        voxel_side_length_z = np.zeros(self.signal.shape)
-        
-        #Compute the voxel side lengths as the distance between the centroids
-        #of adjacent voxels
-        voxel_side_length_x[:,1::,:] = np.abs(np.diff(self.x, axis = 1))
-        voxel_side_length_y[1::,:,:] = np.abs(np.diff(self.y, axis = 0))
-        voxel_side_length_z[:,:,1::] = np.abs(np.diff(self.z, axis = 2))
-        
-        #Pad the borders
-        voxel_side_length_x[:,0,:] = voxel_side_length_x[:,1,:]
-        voxel_side_length_y[0,:,:] = voxel_side_length_y[1,:,:]
-        voxel_side_length_z[:,:,0] = voxel_side_length_z[:,:,1]
-        
         #Compute the volumes of all the voxels
-        volumes = voxel_side_length_x * voxel_side_length_y * voxel_side_length_z
+        x_length, y_length, z_length = self.get_voxel_dims()
+        volumes = x_length * y_length * z_length
         overall_volume = np.sum(volumes.flatten())
         
         return volumes, overall_volume        
