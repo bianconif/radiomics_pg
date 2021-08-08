@@ -73,7 +73,7 @@ class Roi():
         self.mask = mask[slice_idxs]   
         
         #Read the signal
-        signal, x, y, z = read_dicom(scan_folder)
+        signal, x, y, z, x_length, y_length, z_length = read_dicom(scan_folder)
         self.signal = signal[slice_idxs]
         self.x = x[slice_idxs]
         self.y = y[slice_idxs]

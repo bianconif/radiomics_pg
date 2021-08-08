@@ -33,19 +33,24 @@ def read(folder_name):
     data : nparray
         The voxel values (signal)
     x : nparray 
-        The coronal coordinate. The x-axis is increasing to the left hand side 
-        of the patient.
+        The coronal coordinate of the centroid of each voxel. The x-axis is 
+        increasing to the left hand side of the patient.
     y : nparray
-        The sagittal coordinate. The y-axis is increasing to the posterior side 
-        of the patient.
+        The sagittal coordinate of the centroid of each voxel. The y-axis is
+        increasing to the posterior side of the patient.
     z : nparray
-        The axial coordinate. The z-axis is increasing toward the head of the 
-        patient.
+        The axial coordinate of the centroid of each voxel. The z-axis is
+        increasing toward the head of the patient.
+    x_length : The length of the side of each voxel along the coronal coordinate.
+    y_length : The length of the side of each voxel along the sagittal coordinate.
+    z_length : The length of the side of each voxel along the axial coordinate
+               (slice thickness).
     
     Notes
     -----
-    The returned data, x, y and z have all the same size. It is assumed that the
-    original dicom data are in the default human standard anatomical position.
+    The returned data, x, y, z, x_length, y_length and z_length have all the
+    same size. It is assumed that the original dicom data are in the default 
+    human standard anatomical position.
     The data array is organised as follows:
         0th axis -> y
         1st axis -> x
@@ -66,10 +71,14 @@ def read(folder_name):
     dtype = ds.pixel_array[0].dtype
     data = np.zeros((height,width,depth), dtype = dtype)
     
-    #Create the empty coordinate matrices
-    x = np.zeros((height,width,depth), dtype = np.float)
-    y = np.array(x, copy = True)
-    z = np.array(x, copy = True)
+    #Create an empty box for the return values besides data
+    #retval(:,:,:,0) -> x coordinates of the centroids
+    #retval(:,:,:,1) -> y coordinates of the centroids
+    #retval(:,:,:,2) -> z coordinates of the centroids
+    #retval(:,:,:,3) -> voxel side length along x
+    #retval(:,:,:,4) -> voxel side length along y
+    #retval(:,:,:,5) -> voxel side length along z
+    retval = np.zeros((height,width,depth,6), dtype = np.float)
     
     #Indices matrix
     idxs = np.meshgrid(range(height), range(width), indexing = 'ij')
@@ -82,24 +91,26 @@ def read(folder_name):
         ds = pydicom.read_file(dicom_loc, force=True)  
         row_spacing, column_spacing =\
             _get_value_of_generic_attribute(ds, 'PixelSpacing')
+        slice_thickness = _get_value_of_generic_attribute(ds, 'SliceThickness')
         slice_location = _get_slice_location(ds)
         slice_locations.append(slice_location)
         
         #Update the data and coordinate matrices
         data[:,:,i] = ds.pixel_array
-        x[idxs[0],idxs[1],i] =  column_spacing * (idxs[1] + 0.5)
-        y[idxs[0],idxs[1],i] =  row_spacing * (idxs[0] + 0.5)
-        z[:,:,i] = slice_location
+        retval[idxs[0],idxs[1],i,0] = column_spacing * (idxs[1] + 0.5)
+        retval[idxs[0],idxs[1],i,1] = row_spacing * (idxs[0] + 0.5)
+        retval[:,:,i,2] = slice_location
+        retval[idxs[0],idxs[1],i,3] = column_spacing
+        retval[idxs[0],idxs[1],i,4] = row_spacing 
+        retval[:,:,i,5] = slice_thickness
           
     #Sort the matrices by slice location
     index_array = np.argsort(np.array(slice_locations))
     index_array = np.flip(index_array)
     data = data[:,:,index_array]
-    x = x[:,:,index_array]
-    y = y[:,:,index_array]
-    z = z[:,:,index_array]
+    retval = retval[:,:,index_array,:]
         
-    return data, x, y, z
+    return data, *[retval[:,:,:,i] for i in range(retval.shape[3])]
 
 def get_attribute_value(source, attribute):
     """Retrieve the attribute value from a DICOM file

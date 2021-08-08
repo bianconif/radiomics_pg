@@ -25,7 +25,7 @@ for s in range(mask_slice.shape[2]):
     
 #Read the signal
 folder_name = '../../../../Pac_F_Bianco/ProgettiRicerca/Radiomics/Datasets/Sassari/Studies/SPN-01/115GA/dicom-scans/CT'
-signal, x, y, z = read_dicom(folder_name)
+signal, x, y, z, x_length, y_length, z_length = read_dicom(folder_name)
 signal_slice = signal[slice_idxs]
 x_slice = x[slice_idxs]
 y_slice = y[slice_idxs]
