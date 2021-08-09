@@ -21,8 +21,11 @@ class Roi():
         scan_folder : str
             Path to the folder containing the dicom data. It is assumed each
             dicom file in the folder represents one slice. 
-        diagnosis (optional) : str
-            A string indicating the diagnosis for the Roi.
+        diagnosis (optional) : dict
+            A dictionary containing details about the diagnosis of the lesion.
+            For instance: 
+                diagnosis = {'Malignancy' : True, 'Histology' : 'Adenocarcinoma'}
+                diagnosis = {'Malignancy' : False, 'Histology' : 'Hamartoma'}
         """
         
         #Create an empty Roi and import data from scan and mask 
@@ -31,9 +34,7 @@ class Roi():
         
         #Load the diagnosis if present
         if 'diagnosis' in kwargs.keys():
-            roi.diagnosis = kwargs['diagnosis']
-        else:
-            roi.diagnosis = None
+            roi.metadata.update(kwargs['diagnosis'])
         
         return roi
     
@@ -53,7 +54,7 @@ class Roi():
            
     def __init__(self):
         self.empty = True
-        self.diagnosis = None
+        self.metadata = dict()
     
     def _import(self, mask_file, scan_folder):
         """Import scan (dicom) and mask (nii) data
@@ -90,6 +91,16 @@ class Roi():
         self.geometry[:,:,:,5] = z_length[slice_idxs]        
         
         self.empty = False
+    
+    def get_metadata(self):
+        """The metadata associated with the ROI
+        
+        Returns
+        -------
+        metadata : dict
+            A dictionary containing the metadata.
+        """
+        return self.metadata
     
     def get_voxel_centroid_coordinates(self):
         """Coordinates of the centroid of each voxel
@@ -151,7 +162,7 @@ class Roi():
             pickle.dump((self.mask, 
                          self.signal, 
                          self.geometry,
-                         self.diagnosis), f)           
+                         self.metadata), f)           
             
     def _load(self, source):
         """Load the ROI from a pickle file
@@ -163,7 +174,7 @@ class Roi():
         """
         
         with open(source, 'rb') as f:
-            self.mask, self.signal, self.geometry, self.diagnosis =\
+            self.mask, self.signal, self.geometry, self.metadata =\
                 pickle.load(f)
              
         self.empty = False

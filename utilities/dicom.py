@@ -18,7 +18,7 @@ _dicom_lut = {
     'StudyDate' : (0x08, 0x20),
     'TubeVoltage' : (0x18, 0x60)
 }
-
+ 
 def read(folder_name):
     """Read data from a DICOM folder
     
@@ -72,12 +72,6 @@ def read(folder_name):
     data = np.zeros((height,width,depth), dtype = dtype)
     
     #Create an empty box for the return values besides data
-    #retval(:,:,:,0) -> x coordinates of the centroids
-    #retval(:,:,:,1) -> y coordinates of the centroids
-    #retval(:,:,:,2) -> z coordinates of the centroids
-    #retval(:,:,:,3) -> voxel side length along x
-    #retval(:,:,:,4) -> voxel side length along y
-    #retval(:,:,:,5) -> voxel side length along z
     retval = np.zeros((height,width,depth,6), dtype = np.float)
     
     #Indices matrix
