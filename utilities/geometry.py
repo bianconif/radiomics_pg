@@ -280,25 +280,24 @@ class TriangularMesh():
         self.faces = faces
         self.normals = normals
         
-    def show(self):
-        """Display the mesh
+    def draw(self, fig):
+        """Displays the mesh
         
-        Sourced from 
+        Returns
+        -------
+        ax : matplotlib.pyplot.axis
+            The axis object where the mesh is drawn.
         """
         # Display the triangular mesh using Matplotlib. This can also be done
         # with mayavi (see skimage.measure.marching_cubes_lewiner docstring).
-        fig = plt.figure(figsize=(10, 10))
+        #fig = plt.figure(figsize=(10, 10))
         ax = fig.add_subplot(111, projection='3d')
         
         # Fancy indexing: `verts[faces]` to generate a collection of triangles
         mesh = Poly3DCollection(self.verts[self.faces])
         mesh.set_edgecolor('k')
         ax.add_collection3d(mesh)
-        
-        ax.set_xlabel("Coronal")
-        ax.set_ylabel("Sagittal")
-        ax.set_zlabel("Axial")
-        
+                
         #Grant extra space around the mesh for plotting
         extra_margin_frac = 0.30
         min_ = [np.min(self.verts[:,i]) for i in range(3)]
@@ -315,8 +314,10 @@ class TriangularMesh():
         ax.set_ylim(*ylims)
         ax.set_zlim(*zlims)
         
-        plt.tight_layout()
-        plt.show()  
+        return ax
+        
+        #plt.tight_layout()
+        #plt.show()  
         
     def _compute_surface_area(self):
         """Computes the area of the triangular mesh and stores is as an attribute

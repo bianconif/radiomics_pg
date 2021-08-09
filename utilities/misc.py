@@ -303,6 +303,22 @@ class Roi():
         voxel_volume = np.sum(valid_volumes.flatten())
         
         return voxel_volume
+    
+    def draw_mesh(self, fig):
+        """Draw the triangular mesh on a Matplotlib figure
         
+        Parameters
+        ----------
+        fig : matplotlib.pyplot.figure
+            The matplotlib figure object where to show the mesh
+        """
+        
+        #Draw the triangular mesh on the input figure and retrieve the axis
+        ax = self.get_mask_mesh().draw(fig)
+        
+        #Set the axis labels
+        ax.set_xlabel("Right <- Coronal -> Left [mm]")
+        ax.set_ylabel("Anterior <- Sagittal -> Posterior [mm]")
+        ax.set_zlabel("Inferior <- Axial -> Superior [mm]")        
 
             

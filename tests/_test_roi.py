@@ -1,5 +1,7 @@
 import json
 
+import matplotlib.pyplot as plt
+
 from radiomics_pg.utilities.misc import Roi
 from radiomics_pg.utilities.geometry import TriangularMesh
 
@@ -29,8 +31,12 @@ for patient_id in patient_ids:
 #print(f'Average spacing: {avg_spacing}')
 
     #Get the triangular mesh
-    tm = roi_1.get_mask_mesh()
-    tm.show()
+    fig = plt.figure(figsize=(10, 10))
+    roi_1.draw_mesh(fig)
+    #tm = roi_1.get_mask_mesh()
+    #tm.draw(fig)
+    plt.tight_layout()
+    plt.show()
     
     print(f'Patient-ID: {patient_id}, diagnosis: {roi_1.get_metadata()}')
     print(f'The voxel volume of the ROI is: {roi_1.get_voxel_volume()}')
