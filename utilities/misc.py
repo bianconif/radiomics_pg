@@ -4,6 +4,7 @@ import numpy as np
 
 from radiomics_pg.utilities.nii import read as read_nii
 from radiomics_pg.utilities.dicom import read as read_dicom
+from radiomics_pg.utilities.dicom import read_metadata as read_dicom_metadata
 from radiomics_pg.utilities.geometry import bounding_box, zingg_shape, TriangularMesh,\
      inertia_tensor
 
@@ -88,7 +89,10 @@ class Roi():
         self.geometry[:,:,:,2] = z[slice_idxs]
         self.geometry[:,:,:,3] = x_length[slice_idxs]
         self.geometry[:,:,:,4] = y_length[slice_idxs]
-        self.geometry[:,:,:,5] = z_length[slice_idxs]        
+        self.geometry[:,:,:,5] = z_length[slice_idxs]   
+        
+        #Read the metadata
+        self.metadata.update(read_dicom_metadata(scan_folder))
         
         self.empty = False
     

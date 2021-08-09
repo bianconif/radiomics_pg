@@ -29,7 +29,7 @@ for patient_id in patient_ids:
 #print(f'Average spacing: {avg_spacing}')
 
     #Generate triangula mesh on mask
-    tm = TriangularMesh.by_marching_cubes(roi_1)
+    tm = roi_1.get_mask_mesh()
     tm.show()
     
     print(f'Patient-ID: {patient_id}, diagnosis: {roi_1.get_metadata()}')

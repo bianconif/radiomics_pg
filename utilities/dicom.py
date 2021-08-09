@@ -18,6 +18,42 @@ _dicom_lut = {
     'StudyDate' : (0x08, 0x20),
     'TubeVoltage' : (0x18, 0x60)
 }
+
+def read_metadata(folder_name, names = set(['Age', 'Gender'])):
+    """Read metadata from a DICOM folder. The metadata are retrieved from
+    the first .dcm file (in lexicographical order)
+    
+    Parameters
+    ----------
+    folder_name : str
+        The folder where the DICOM files are stored. Make sure the folder only
+        contains DICOM files (the extension doesn't matter).
+    names : set of str
+        The names of the metadata to retrieve. See _dicom_lut for possible
+        values.
+        
+    Returns
+    -------
+    metadata : dict
+        A dictionary containing the requested metadata. The keys of the
+        dictionary are the elmenets of names
+    """
+    metadata = dict()
+    
+    #Walk through the files in the folder
+    dicoms = list()
+    for root, dirs, files in os.walk(folder_name):
+        for file in files: 
+            dicoms.append(file) 
+    dicoms.sort()
+    
+    #Read the metadata from the first file
+    ds = pydicom.read_file(f'{folder_name}/{dicoms[0]}', force=True)  
+    for name in names:
+        value = _get_value_of_generic_attribute(ds, name)
+        metadata.update({name : value})
+            
+    return metadata
  
 def read(folder_name):
     """Read data from a DICOM folder
