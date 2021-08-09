@@ -28,7 +28,7 @@ for patient_id in patient_ids:
 #avg_spacing = roi_1.get_average_spacing()
 #print(f'Average spacing: {avg_spacing}')
 
-    #Generate triangula mesh on mask
+    #Get the triangular mesh
     tm = roi_1.get_mask_mesh()
     tm.show()
     

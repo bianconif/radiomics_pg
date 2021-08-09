@@ -304,40 +304,5 @@ class Roi():
         
         return voxel_volume
         
-    def zingg_shape(self, on_signal = True):
-        """Zingg shape parameters and classification
-        
-        Parameters
-        ----------
-        on_signal : bool
-            A flag indicating whether the shape parameters are computed on the
-            signal (True) or on the mask (False).
-                    
-        Returns
-        -------
-        r1, r2 : float
-            Respectively b/a and c/b, where a, b and c indicate the principal 
-            inertia moments of the mass distribution sorted in descending order 
-            (a > b > c).
-        zingg_class : int (possible values = 0, 1, 2 and 3)
-            The Zingg class:
-                0 -> rod (prolate)
-                1 -> blade (oblate)
-                2 -> sphere (equant)
-                3 -> disc
-             
-        References
-        ----------
-        [1] Domokos, G., Sipos, A., Szabo, T., Varkonyi, P.
-            Pebbles, Shapes, and Equilibria
-            (2010) Mathematical Geosciences, 42 (1), pp. 29-47. 
-        """   
-        r1 = r2 = zingg_class = None
-        if on_signal:
-            r1, r2, zingg_class = zingg_shape(self.x, self.y, self.z, self.signal)
-        else:
-            r1, r2, zingg_class = zingg_shape(self.x, self.y, self.z, self.mask)
-            
-        return r1, r2, zingg_class
 
             

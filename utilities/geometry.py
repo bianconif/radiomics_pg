@@ -295,9 +295,9 @@ class TriangularMesh():
         mesh.set_edgecolor('k')
         ax.add_collection3d(mesh)
         
-        ax.set_xlabel("x")
-        ax.set_ylabel("y")
-        ax.set_zlabel("z")
+        ax.set_xlabel("Coronal")
+        ax.set_ylabel("Sagittal")
+        ax.set_zlabel("Axial")
         
         #Grant extra space around the mesh for plotting
         extra_margin_frac = 0.30
