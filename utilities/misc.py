@@ -318,9 +318,9 @@ class Roi():
         ax = self.get_mask_mesh().draw(fig)
         
         #Set the axis labels
-        ax.set_xlabel("Right <- Coronal -> Left [mm]")
-        ax.set_ylabel("Anterior <- Sagittal -> Posterior [mm]")
-        ax.set_zlabel("Inferior <- Axial -> Superior [mm]")   
+        ax.set_xlabel(u"Right \u2190 \u2192 Left [mm]")
+        ax.set_ylabel("Ventral <- \u2190 \u2192 -> Dorsal [mm]")
+        ax.set_zlabel("Caudal <- \u2190 \u2192 -> Cranial [mm]")   
         
     def dump_to_bitmaps(self, out_folder):
         """Exports the signal and mask as sets of bitmaps - one for each
