@@ -319,8 +319,8 @@ class Roi():
         
         #Set the axis labels
         ax.set_xlabel(u"Right \u2190 \u2192 Left [mm]")
-        ax.set_ylabel("Ventral <- \u2190 \u2192 -> Dorsal [mm]")
-        ax.set_zlabel("Caudal <- \u2190 \u2192 -> Cranial [mm]")   
+        ax.set_ylabel(u"Ventral \u2190 \u2192 Dorsal [mm]")
+        ax.set_zlabel(u"Caudal \u2190 \u2192 Cranial [mm]")   
         
     def dump_to_bitmaps(self, out_folder):
         """Exports the signal and mask as sets of bitmaps - one for each
