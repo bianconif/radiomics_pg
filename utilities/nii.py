@@ -29,7 +29,7 @@ def read(filename):
         
     #Sort the data matrix by slice location
     index_array = np.argsort(np.array(slice_locations))
-    index_array = np.flip(index_array)
+    #index_array = np.flip(index_array)
     data = data[:,:,index_array]    
             
     #Take the transpose to make the orientation coherent with DICOM reference

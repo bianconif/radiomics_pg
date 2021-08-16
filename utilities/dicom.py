@@ -136,7 +136,7 @@ def read(folder_name):
           
     #Sort the matrices by slice location
     index_array = np.argsort(np.array(slice_locations))
-    index_array = np.flip(index_array)
+    #index_array = np.flip(index_array)
     data = data[:,:,index_array]
     retval = retval[:,:,index_array,:]
         
