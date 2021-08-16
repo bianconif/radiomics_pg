@@ -1,4 +1,5 @@
 import json
+import os
 
 import matplotlib.pyplot as plt
 
@@ -25,12 +26,14 @@ for patient_id in patient_ids:
     roi = Roi.from_dcm_and_nii(mask_file, scan_folder, diagnosis = diagnosis)
     roi.save(f'tests/roi/{patient_id}.pkl')
     roi_1 = Roi.from_pickle(source = f'tests/roi/{patient_id}.pkl')
+    
+    #Dump the roi as bitmap
+    bitmap_dump_folder = f'tests/roi/bitmap_dump/{patient_id}'
+    if not os.path.isdir(bitmap_dump_folder):
+        os.makedirs(bitmap_dump_folder)
+    roi_1.dump_to_bitmaps(bitmap_dump_folder)
 
-#Average spacing
-#avg_spacing = roi_1.get_average_spacing()
-#print(f'Average spacing: {avg_spacing}')
-
-    #Get the triangular mesh
+    #Show the triangular mesh
     fig = plt.figure(figsize=(10, 10))
     roi_1.draw_mesh(fig)
     #tm = roi_1.get_mask_mesh()

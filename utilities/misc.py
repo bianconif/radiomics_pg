@@ -1,5 +1,6 @@
 import pickle
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 from radiomics_pg.utilities.nii import read as read_nii
@@ -319,6 +320,32 @@ class Roi():
         #Set the axis labels
         ax.set_xlabel("Right <- Coronal -> Left [mm]")
         ax.set_ylabel("Anterior <- Sagittal -> Posterior [mm]")
-        ax.set_zlabel("Inferior <- Axial -> Superior [mm]")        
-
+        ax.set_zlabel("Inferior <- Axial -> Superior [mm]")   
+        
+    def dump_to_bitmaps(self, out_folder):
+        """Exports the signal and mask as sets of bitmaps - one for each
+        axial slice. Within each slice the values are normalised so that 
+        the minimum becomes black and maximum white.
+        
+        Parameters
+        ----------
+        out_folder : str
+            The folder where to save the bitmaps.
+        """
+        dims = self.mask.shape
+        
+        for s in range(dims[2]):
             
+            #Dump the signal
+            plt.imshow(self.signal[:,:,s], cmap="gray")
+            plt.axis('off')
+            plt.savefig(f'{out_folder}/signal--{s:03d}.jpg', dpi=300, 
+            bbox_inches='tight', pad_inches = 0)   
+            
+            #Dump the mask
+            plt.imshow(self.mask[:,:,s], cmap="gray")
+            plt.axis('off')
+            plt.savefig(f'{out_folder}/mask--{s:03d}.jpg', dpi=300, 
+            bbox_inches='tight', pad_inches = 0)            
+
+            plt.close()
