@@ -339,17 +339,17 @@ class Roi():
         retval = list()
         
         mass_distro = None
+        mask = self.get_mask()
         if mode == 'intensity-weighted':
-            mass_distro = np.multiply(self.get_signal(), self.get_mask()).\
-                flatten()
+            mass_distro = self.get_signal()[mask == True]
         elif mode == 'non-intensity-weighted':
-            mass_distro = self.get_mask().flatten()
+            mass_distro = self.get_mask()[mask == True]
         else:
             raise Exception(f'Mode *{mode}* not supported')
         
         voxel_centroid_coordinates = self.get_voxel_centroid_coordinates()
         for coordinate in voxel_centroid_coordinates:
-            retval.append(centroid(coordinate.flatten(), mass_distro))
+            retval.append(centroid(coordinate[mask == True].flatten(), mass_distro))
         
         return *retval,
     
@@ -397,3 +397,5 @@ class Roi():
             bbox_inches='tight', pad_inches = 0)            
 
             plt.close()
+    
+

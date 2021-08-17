@@ -8,6 +8,7 @@ References
 """
 
 import numpy as np
+from scipy.spatial.distance import pdist
 
 def volume_density(roi):
     """Ratio between the volume of the mask and the volume of the axis-aligned
@@ -100,4 +101,35 @@ def sphericity(roi):
     V = roi.get_mesh_volume()
     sphericity = ((36 * np.pi * V ** 2) ** (1/3))/A
     return sphericity
+
+def max_3d_diameter(roi):
+    """The distance between the centroid of the most apart voxels. Note that
+    this definition is slightly different from that proposed in [1, par. 3.1.11]
+    where the distance is computed on the triangular mesh.
+    
+    Parameters
+    ----------
+    roi : Roi
+        The input roi.
+
+    Returns
+    -------
+    max_3d_diameter : float
+        The maximum pairwise distance between the centroids of the two
+        most apart voxels (dimension: length).
+    """
+    centroid_coords = roi.get_voxel_centroid_coordinates()
+    mask = roi.get_mask()
+    ndims = len(centroid_coords)
+    
+    #Make up the observation matrix
+    M = np.zeros((np.sum(mask.flatten().astype(np.int)), ndims))
+    for d in range(ndims):
+        M[:,d] = centroid_coords[d][mask == True].flatten()
+        
+    #Compute the pairwise distances
+    pairwise_dists = pdist(M, metric='euclidean')
+    max_3d_diameter = np.max(pairwise_dists)
+    
+    return max_3d_diameter
 
