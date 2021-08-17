@@ -6,7 +6,7 @@ import numpy as np
 from radiomics_pg.utilities.nii import read as read_nii
 from radiomics_pg.utilities.dicom import read as read_dicom
 from radiomics_pg.utilities.dicom import read_metadata as read_dicom_metadata
-from radiomics_pg.utilities.geometry import bounding_box, zingg_shape, TriangularMesh,\
+from radiomics_pg.utilities.geometry import bounding_box, centroid, TriangularMesh,\
      inertia_tensor
 
 class Roi():
@@ -255,6 +255,18 @@ class Roi():
             np.multiply(self.get_signal(), self.get_mask()))   
         return principal_moments
     
+    @property
+    def x(self):
+        return self._geometry[:,:,:,0]
+    
+    @property
+    def y(self):
+        return self._geometry[:,:,:,1]
+    
+    @property
+    def z(self):
+        return self._geometry[:,:,:,2]    
+    
     def get_roi_dimensions(self):
         """Returns the dimensions of the ROI along the axial, sagittal and coronal
         axis
@@ -304,6 +316,42 @@ class Roi():
         voxel_volume = np.sum(valid_volumes.flatten())
         
         return voxel_volume
+    
+    def get_mask_centroid(self, mode = 'intensity-weighted'):
+        """Centroid coordinates of the mask (intensity-weighted and non
+        intensity_wighted) 
+        
+        Parameters
+        ----------
+        mode : str
+            How to compute the centroid. Possible values are:
+                'non-intensity-weighted' 
+                    -> The centroid is computed on the mask only; the signal is 
+                       discarded.
+                'intensity-weighted' 
+                    -> The centroid is computed on the intensity-weighted mask.
+        
+        Returns
+        -------
+        xc, yx, zc : float
+            The centroid coordinates of the intensity-weighted mask.
+        """
+        retval = list()
+        
+        mass_distro = None
+        if mode == 'intensity-weighted':
+            mass_distro = np.multiply(self.get_signal(), self.get_mask()).\
+                flatten()
+        elif mode == 'non-intensity-weighted':
+            mass_distro = self.get_mask().flatten()
+        else:
+            raise Exception(f'Mode *{mode}* not supported')
+        
+        voxel_centroid_coordinates = self.get_voxel_centroid_coordinates()
+        for coordinate in voxel_centroid_coordinates:
+            retval.append(centroid(coordinate.flatten(), mass_distro))
+        
+        return *retval,
     
     def draw_mesh(self, fig):
         """Draw the triangular mesh on a Matplotlib figure
