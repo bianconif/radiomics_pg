@@ -6,6 +6,7 @@ import numpy as np
 
 import dateutil.parser
 import pydicom
+from pydicom.pixel_data_handlers.util import apply_modality_lut
 
 _dicom_lut = {
     'Age' : (0x10, 0x1010),
@@ -125,8 +126,12 @@ def read(folder_name):
         slice_location = _get_slice_location(ds)
         slice_locations.append(slice_location)
         
-        #Update the data and coordinate matrices
-        data[:,:,i] = ds.pixel_array
+        #Get the raw data (generally uint16)
+        raw_data = ds.pixel_array 
+        
+        #Convert them to physical units
+        data[:,:,i] = apply_modality_lut(raw_data, ds)
+                  
         retval[idxs[0],idxs[1],i,0] = column_spacing * (idxs[1] + 0.5)
         retval[idxs[0],idxs[1],i,1] = row_spacing * (idxs[0] + 0.5)
         retval[:,:,i,2] = slice_location
