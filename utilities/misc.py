@@ -36,7 +36,7 @@ class Roi():
         
         #Load the diagnosis if present
         if 'diagnosis' in kwargs.keys():
-            roi.metadata.update(kwargs['diagnosis'])
+            roi._metadata.update(kwargs['diagnosis'])
         
         return roi
     
@@ -55,8 +55,8 @@ class Roi():
         return roi        
            
     def __init__(self):
-        self.empty = True
-        self.metadata = dict()
+        self._empty = True
+        self._metadata = dict()
     
     def _import(self, mask_file, scan_folder):
         """Import scan (dicom) and mask (nii) data
@@ -73,29 +73,29 @@ class Roi():
         #Read the mask
         mask = read_nii(mask_file)
         _, mask_slice, slice_idxs = bounding_box(mask)
-        self.mask = mask[slice_idxs]   
+        self._mask = mask[slice_idxs]   
         
         #Read and store the signal
         signal, x, y, z, x_length, y_length, z_length = read_dicom(scan_folder)
-        self.signal = signal[slice_idxs]
+        self._signal = signal[slice_idxs]
         
         #Read and store the coordinates of the centroids and the side length of
         #each voxel. The 'geometry' attribute is arranged as follows:
         #self.geometry[:,:,:,0-2] -> x, y and z coordinates of the centroid of
         #each voxel
         #self.geometry[:,:,:,3-5] -> side length of each voxel along x, y and z
-        self.geometry = np.zeros((*self.signal.shape, 6))
-        self.geometry[:,:,:,0] = x[slice_idxs]
-        self.geometry[:,:,:,1] = y[slice_idxs]
-        self.geometry[:,:,:,2] = z[slice_idxs]
-        self.geometry[:,:,:,3] = x_length[slice_idxs]
-        self.geometry[:,:,:,4] = y_length[slice_idxs]
-        self.geometry[:,:,:,5] = z_length[slice_idxs]   
+        self._geometry = np.zeros((*self._signal.shape, 6))
+        self._geometry[:,:,:,0] = x[slice_idxs]
+        self._geometry[:,:,:,1] = y[slice_idxs]
+        self._geometry[:,:,:,2] = z[slice_idxs]
+        self._geometry[:,:,:,3] = x_length[slice_idxs]
+        self._geometry[:,:,:,4] = y_length[slice_idxs]
+        self._geometry[:,:,:,5] = z_length[slice_idxs]   
         
         #Read the metadata
-        self.metadata.update(read_dicom_metadata(scan_folder))
+        self._metadata.update(read_dicom_metadata(scan_folder))
         
-        self.empty = False
+        self._empty = False
     
     def get_metadata(self):
         """The metadata associated with the ROI
@@ -105,7 +105,7 @@ class Roi():
         metadata : dict
             A dictionary containing the metadata.
         """
-        return self.metadata
+        return self._metadata
     
     def get_voxel_centroid_coordinates(self):
         """Coordinates of the centroid of each voxel
@@ -115,7 +115,7 @@ class Roi():
         x, y, z : nparray of float
             The coordinates of the centroid of each voxel
         """
-        return [self.geometry[:,:,:,i] for i in (0,1,2)]
+        return [self._geometry[:,:,:,i] for i in (0,1,2)]
     
     def get_voxel_dims(self):
         """Dimensions of each voxel along x, y and z
@@ -125,15 +125,15 @@ class Roi():
         x_length, y_length, z_length : nparray of float
             The dimension (side length) of each voxel along x, y and z
         """
-        return [self.geometry[:,:,:,i] for i in (3,4,5)]
+        return [self._geometry[:,:,:,i] for i in (3,4,5)]
     
     def get_signal(self):
         """Return the signal volume"""
-        return self.signal
+        return self._signal
     
     def get_mask(self):
         """Return the mask volume"""
-        return self.mask    
+        return self._mask    
     
     def get_average_spacing(self):
         """The average inter-voxel spacing in the x, y and z directions
@@ -164,10 +164,10 @@ class Roi():
         self._not_empty_check()
         
         with open(destination, "wb") as f:
-            pickle.dump((self.mask, 
-                         self.signal, 
-                         self.geometry,
-                         self.metadata), f)           
+            pickle.dump((self._mask, 
+                         self._signal, 
+                         self._geometry,
+                         self._metadata), f)           
             
     def _load(self, source):
         """Load the ROI from a pickle file
@@ -179,14 +179,14 @@ class Roi():
         """
         
         with open(source, 'rb') as f:
-            self.mask, self.signal, self.geometry, self.metadata =\
+            self._mask, self._signal, self._geometry, self._metadata =\
                 pickle.load(f)
              
-        self.empty = False
+        self._empty = False
             
     def _not_empty_check(self):
         """Returns an exception if the Roi is empty"""
-        if self.empty:
+        if self._empty:
             raise Exception(f'The Roi is empty')
         
     def get_mask_mesh(self):
@@ -332,18 +332,18 @@ class Roi():
         out_folder : str
             The folder where to save the bitmaps.
         """
-        dims = self.mask.shape
+        dims = self._mask.shape
         
         for s in range(dims[2]):
             
             #Dump the signal
-            plt.imshow(self.signal[:,:,s], cmap="gray")
+            plt.imshow(self._signal[:,:,s], cmap="gray")
             plt.axis('off')
             plt.savefig(f'{out_folder}/signal--{s:03d}.jpg', dpi=300, 
             bbox_inches='tight', pad_inches = 0)   
             
             #Dump the mask
-            plt.imshow(self.mask[:,:,s], cmap="gray")
+            plt.imshow(self._mask[:,:,s], cmap="gray")
             plt.axis('off')
             plt.savefig(f'{out_folder}/mask--{s:03d}.jpg', dpi=300, 
             bbox_inches='tight', pad_inches = 0)            
