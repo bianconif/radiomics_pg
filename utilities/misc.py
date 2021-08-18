@@ -289,7 +289,7 @@ class Roi():
         return roi_dimensions
     
     def get_roi_volume(self):
-        """Returns the volume of the roi, that is of the axis-aligned bounding box
+        """Returns the volume of the axis-aligned bounding box
         
         Returns
         -------

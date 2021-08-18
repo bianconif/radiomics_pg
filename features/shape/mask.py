@@ -8,6 +8,7 @@ References
 """
 
 import numpy as np
+from itertools import combinations
 from scipy.spatial.distance import pdist
 
 def voxel_volume(roi):
@@ -42,6 +43,28 @@ def volume_density(roi):
     """
     _, roi_volume = roi.get_roi_volume()
     return roi.get_voxel_volume()/roi_volume
+
+def area_density(roi):
+    """Ratio between the surface area of the mask and the area of the axis-aligned
+    bounding box [1, 3.1.18].
+    
+    Parameters
+    ----------
+    roi : Roi
+        The input roi.
+    
+    Returns
+    -------
+    adensity : float
+        The area density (dimensionless units).
+    """   
+    dims = length_breadth_thickness(roi)
+    bounding_box_area = 0
+    combs = combinations(dims, 2)
+    for comb in combs:
+        bounding_box_area = bounding_box_area + 2*comb[0]*comb[1]
+    
+    return roi.get_surface_area()/bounding_box_area
 
 def length_breadth_thickness(roi):
     """The length, breadth and thickness of the ROI, that is, the three
