@@ -9,6 +9,8 @@ References
 
 import numpy as np
 
+from radiomics_pg.features.shape.mask import max_3d_diameter
+
 def centre_of_mass_shift(roi):
     """The distance between the signal (intensity-weighted) centroid and the 
     mask centroid (paragraph 3.1.10 of [1]).
@@ -29,3 +31,18 @@ def centre_of_mass_shift(roi):
         roi.get_mask_centroid(mode = 'non-intensity-weighted'))    
     cm_shift = np.linalg.norm(w_centroid - nw_centroid, ord = 2)
     return cm_shift
+
+def normalised_centre_of_mass_shift(roi):
+    """Ratio between the centre of mass shift and the maximum 3D diameter
+    
+    Parameters
+    ----------
+    roi : Roi
+        The input roi.
+    
+    Returns
+    -------
+    normalised_cm_shift : float
+        The normalised centre of mass shift (dimensionless units).
+    """
+    return centre_of_mass_shift(roi)/max_3d_diameter(roi)

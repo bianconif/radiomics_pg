@@ -250,9 +250,15 @@ class Roi():
             The principal moments of inertia sorted in descending order of 
             magnitude: [I1, I2, I3]
         """
+        
+        #Normalise the signal to min = 0 to avoid dealing with negative masses
+        norm_signal = self.get_signal()
+        norm_signal = norm_signal - np.min(norm_signal.flatten())
+        
         _, principal_moments = inertia_tensor(
             self.x, self.y, self.z, 
-            np.multiply(self.get_signal(), self.get_mask()))   
+            np.multiply(norm_signal, self.get_mask()))
+
         return principal_moments
     
     @property

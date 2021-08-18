@@ -5,7 +5,27 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from skimage.measure import marching_cubes, mesh_surface_area
 
-
+def axes_length_inertia_ellipsoid(principal_moments):
+    """Length of each axis of the ellipsoid of inertia having the
+    principal moments given
+    
+    Parameters
+    ----------
+    principal_moments : list of float (3)
+        The principal moments (eigenvalues of the mass distribution).
+    
+    Returns
+    -------
+    axes_length : list of float (3)
+        The length of each axis of the ellipsoid of inertia determined
+        by the principal moments given. The values are sorted in descending
+        order.
+    """
+    axes_length = list()
+    for pm in principal_moments:
+        axes_length.append(1/(np.sqrt(pm)))
+    axes_length.sort(reverse = True)
+    return axes_length
 
 def cross_moment(coordinates_a, coordinates_b, mass_distro, order_a = 2, 
                  order_b = 2, central = False):
@@ -427,7 +447,9 @@ class TriangularMesh():
             self._compute_volume()
         
         volume = self.volume            
-        return volume            
+        return volume   
+    
+
              
         
             

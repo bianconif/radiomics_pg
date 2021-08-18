@@ -10,6 +10,22 @@ References
 import numpy as np
 from scipy.spatial.distance import pdist
 
+def voxel_volume(roi):
+    """The volume computed by summing up the volume of each voxel in the mask
+    (paragraph 3.1.2 of [1]).
+    
+    Parameters
+    ----------
+    roi : Roi
+        The input roi.
+    
+    Returns
+    -------
+    voxel_volume : float
+        The volume density (units: length^3).
+    """    
+    return roi.get_voxel_volume()
+
 def volume_density(roi):
     """Ratio between the volume of the mask and the volume of the axis-aligned
     bounding box (paragraph 3.1.17 of [1]). Also referred to as 'Rectangular fit'.

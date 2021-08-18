@@ -14,6 +14,8 @@ References
     (1993) Earth Surface Processes and Landforms, 18 (7), pp. 665-672. 
 """
 
+from radiomics_pg.utilities.geometry import axes_length_inertia_ellipsoid
+
 def lbt_index(roi, index, mode):
     """Shape indices based on length, breadth and thickness.
     
@@ -49,9 +51,11 @@ def lbt_index(roi, index, mode):
         dims.sort(reverse = True)
         l, b, t = dims
     elif mode == 'mask':
-        l, b, t = roi.get_principal_moments_mask()
+        l, b, t = axes_length_inertia_ellipsoid(
+            roi.get_principal_moments_mask())
     elif  mode == 'signal':
-        l, b, t = roi.get_principal_moments_signal()
+        l, b, t = axes_length_inertia_ellipsoid(
+            roi.get_principal_moments_signal())
     else:
         raise Exception(f'Mode *{mode}* not supported')
     
@@ -86,7 +90,11 @@ def _lbt_index(a, b, c, index):
         The value of the shape index.
     """
     value = None
-    if index == 'cailleux-flatness':
+    if index == 'breadth-to-length':
+        value = b/a
+    elif index == 'thickness-to-breadth':
+        value = c/b
+    elif index == 'cailleux-flatness':
         value = 1000 * (a + b) / (2 * c)
     elif index == 'csi':
         value = c / ((a * b) ** (1/2))
