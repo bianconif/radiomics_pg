@@ -11,7 +11,9 @@ References
 ----------
 [1] Benn, D.I., Ballantyne, C.K.
     The description and representation of particle shape
-    (1993) Earth Surface Processes and Landforms, 18 (7), pp. 665-672. 
+    (1993) Earth Surface Processes and Landforms, 18 (7), pp. 665-672.
+[2] Blott, S.J., Pye, K. Particle shape: A review and new methods of 
+    characterization and classification (2008) Sedimentology, 55 (1), pp. 31-63.
 """
 
 from radiomics_pg.utilities.geometry import axes_length_inertia_ellipsoid
@@ -75,12 +77,18 @@ def _lbt_index(a, b, c, index):
         dimensions of the ROI as well as the axes of the inertia ellipsoid.
     index : str
         A string indicating the index requested. Possible values are:
+            - 'breadth-to-length' (breadth/length ratio, represents a measure
+               of elongation [2])
             - 'cailleux-flatness' (Cailleux flatness)
             - 'csi' (Corey shape index)
             - 'disc-rod' (Disc-rod index)
             - 'krumbein-spericity' (Krumbein sphericity)
             - 'mps' (Maximum projection sphericity)
             - 'oblate-prolate' (Oblate-prolate index)
+            - 'thickness-to-breadth' (thickness/breadth ratio, represents a
+               measure of flatness [2])
+            - 'thickness-to-length' (thickness/length ratio, represents a
+               measure of equancy [2])
             - 'wentworth-flatness' (Wentworth flatness)
             
         
@@ -92,8 +100,6 @@ def _lbt_index(a, b, c, index):
     value = None
     if index == 'breadth-to-length':
         value = b/a
-    elif index == 'thickness-to-breadth':
-        value = c/b
     elif index == 'cailleux-flatness':
         value = 1000 * (a + b) / (2 * c)
     elif index == 'csi':
@@ -106,6 +112,10 @@ def _lbt_index(a, b, c, index):
         value = (c**2 / (a*b)) ** (1/3)
     elif index == 'oblate-prolate':
         value = 10 * ((a - b)/(a - c) - 1/2) / (c/a) 
+    elif index == 'thickness-to-breadth':
+        value = c/b 
+    elif index == 'thickness-to-length':
+        value = c/a         
     elif index == 'wentworth-flatness':
         value = (a + b)/c
     else:

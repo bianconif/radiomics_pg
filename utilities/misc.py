@@ -374,7 +374,17 @@ class Roi():
         #Set the axis labels
         ax.set_xlabel(u"Right \u2190 \u2192 Left [mm]")
         ax.set_ylabel(u"Ventral \u2190 \u2192 Dorsal [mm]")
-        ax.set_zlabel(u"Caudal \u2190 \u2192 Cranial [mm]")   
+        ax.set_zlabel(u"Caudal \u2190 \u2192 Cranial [mm]") 
+        
+    def export_mesh_to_stl(self, destination):
+        """Exports the triangular mesh to an STL file (ASCII format)
+        
+        Parameters
+        ----------
+        destination : str
+            The destination file
+        """
+        self.get_mask_mesh().to_stl(destination)
         
     def dump_to_bitmaps(self, out_folder):
         """Exports the signal and mask as sets of bitmaps - one for each

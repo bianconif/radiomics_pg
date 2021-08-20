@@ -23,7 +23,7 @@ def axes_length_inertia_ellipsoid(principal_moments):
     """
     axes_length = list()
     for pm in principal_moments:
-        axes_length.append(1/(np.sqrt(pm)))
+        axes_length.append(2/(np.sqrt(pm)))
     axes_length.sort(reverse = True)
     return axes_length
 
@@ -335,9 +335,50 @@ class TriangularMesh():
         ax.set_zlim(*zlims)
         
         return ax
+         
+    def to_stl(self, destination, name='Unnamed'):
+        """Exports the mesh as ASCII STL
         
-        #plt.tight_layout()
-        #plt.show()  
+        Parameters
+        ----------
+        destination : str
+            The destination file.
+        name : str
+            Name of the solid to be stored in the stl file.
+        """
+        
+        with open(destination, 'w') as stl:
+            
+            #Solid header
+            stl.write(f'solid {name}\n')
+            
+            for f in range(self.faces.shape[0]):
+                            
+                verts_ids = self.faces[f,:]
+            
+                #Compute the average normal for this face
+                avg_normal = np.mean(self.normals[verts_ids,:], axis = 0)
+                
+                #Facet header
+                stl.write(f'facet normal')
+                for ncomp in avg_normal:
+                    stl.write(f' {ncomp}')
+                stl.write(f'\n')
+                stl.write(f'\touter loop\n')
+                
+                #Facet vertices
+                for verts_id in verts_ids:
+                    stl.write(f'\t\tvertex')
+                    for coord in self.verts[verts_id,:]:
+                        stl.write(f' {coord}')
+                    stl.write(f'\n')
+                    
+                #Facet footer
+                stl.write(f'\tendloop\n')
+                stl.write(f'endfacet\n')
+            
+            #Solid footer
+            stl.write(f'endsolid {name}')
         
     def _compute_surface_area(self):
         """Computes the area of the triangular mesh and stores is as an attribute
