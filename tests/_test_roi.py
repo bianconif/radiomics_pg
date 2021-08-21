@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from radiomics_pg.utilities.misc import Roi
 from radiomics_pg.utilities.geometry import TriangularMesh
 
-patient_ids = ['31MM', '71VG', '115GA']
+patient_ids = ['CO050244', '31MM', '71VG', '115GA']
 base_folder = '../../../../Pac_F_Bianco/ProgettiRicerca/Radiomics/Datasets/Sassari/Studies/SPN-01'
 
 for patient_id in patient_ids:    

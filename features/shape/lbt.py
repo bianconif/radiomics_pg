@@ -54,10 +54,10 @@ def lbt_index(roi, index, mode):
         l, b, t = dims
     elif mode == 'mask':
         l, b, t = axes_length_inertia_ellipsoid(
-            roi.get_principal_moments_mask())
+            roi.get_radii_of_gyration(mode = 'mask'))
     elif  mode == 'signal':
         l, b, t = axes_length_inertia_ellipsoid(
-            roi.get_principal_moments_signal())
+            roi.get_radii_of_gyration(mode = 'signal'))
     else:
         raise Exception(f'Mode *{mode}* not supported')
     

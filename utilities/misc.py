@@ -261,6 +261,40 @@ class Roi():
 
         return principal_moments
     
+    def get_radii_of_gyration(self, mode):
+        """Radii of gyration corresponding to the principal moments of
+        inertia
+        
+        Parameters
+        ----------
+        mode : str
+            How the radii of gyration are computed. Can be:
+                 'mask'   -> Radii of gyration computed on the mask 
+                             (non signal-weighted, each voxel weights 1)
+                 'signal' -> Radii of gyration computed on the signal-weighted 
+                             mask 
+        Returns
+        -------
+        radii_of_gyration : nparray of float (3)
+            The radii of gyration, sorted in descending order of magnitude.
+        """
+        mask = self.get_mask()
+        
+        if mode == 'mask':
+            M = np.sum(mask.flatten())
+            principal_moments = self.get_principal_moments_mask() 
+        elif mode == 'signal':
+            #Normalise the signal to min = 0 to avoid dealing with negative masses
+            norm_signal = self.get_signal()
+            norm_signal = norm_signal - np.min(norm_signal.flatten())
+            M = np.sum(np.multiply(norm_signal, mask).flatten())
+            principal_moments = self.get_principal_moments_signal()
+        else:
+            raise Exception(f'Mode *{mode}* not supported')
+        
+        return np.sqrt(principal_moments/M)
+            
+    
     @property
     def x(self):
         return self._geometry[:,:,:,0]
