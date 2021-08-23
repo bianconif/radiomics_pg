@@ -127,9 +127,24 @@ class Roi():
         """
         return [self._geometry[:,:,:,i] for i in (3,4,5)]
     
-    def get_signal(self):
-        """Return the signal volume"""
-        return self._signal
+    def get_signal(self, zero_min = False):
+        """Return the signal
+        
+        Parameters
+        ----------
+        zero_min : bool
+            If true a shift is applied so that min(signal) = 0
+        
+        Returns
+        -------
+        signal : ndarray of float (dims = 3)
+            The signal
+        """
+        signal = self._signal
+        if zero_min:
+            signal = signal - np.min(signal.flatten())
+        
+        return signal
     
     def get_mask(self):
         """Return the mask volume"""
@@ -252,8 +267,7 @@ class Roi():
         """
         
         #Normalise the signal to min = 0 to avoid dealing with negative masses
-        norm_signal = self.get_signal()
-        norm_signal = norm_signal - np.min(norm_signal.flatten())
+        norm_signal = self.get_signal(zero_min = True)
         
         _, principal_moments = inertia_tensor(
             self.x, self.y, self.z, 
@@ -284,10 +298,8 @@ class Roi():
             M = np.sum(mask.flatten())
             principal_moments = self.get_principal_moments_mask() 
         elif mode == 'signal':
-            #Normalise the signal to min = 0 to avoid dealing with negative masses
-            norm_signal = self.get_signal()
-            norm_signal = norm_signal - np.min(norm_signal.flatten())
-            M = np.sum(np.multiply(norm_signal, mask).flatten())
+            signal = self.get_signal(zero_min = True)
+            M = np.sum(np.multiply(signal, mask).flatten())
             principal_moments = self.get_principal_moments_signal()
         else:
             raise Exception(f'Mode *{mode}* not supported')
@@ -381,7 +393,7 @@ class Roi():
         mass_distro = None
         mask = self.get_mask()
         if mode == 'intensity-weighted':
-            mass_distro = self.get_signal()[mask == True]
+            mass_distro = self.get_signal(zero_min = True)[mask == True]
         elif mode == 'non-intensity-weighted':
             mass_distro = self.get_mask()[mask == True]
         else:

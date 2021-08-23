@@ -5,27 +5,29 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from skimage.measure import marching_cubes, mesh_surface_area
 
-def axes_length_inertia_ellipsoid(principal_moments):
-    """Length of each axis of the ellipsoid of inertia having the
-    principal moments given
+def axes_inertia_equivalent_ellipsoid(A, B, C, M):
+    """Length of each axis of the ellipsoid having the same principal moments
+    as that of the input body.
     
     Parameters
     ----------
-    principal_moments : list of float (3)
-        The principal moments (eigenvalues of the mass distribution).
+    A, B, C : float
+        The principal moments (eigenvalues of the mass distribution) of the
+        input body.
+    M : float
+        The total mass of the input body.
     
     Returns
     -------
-    axes_length : list of float (3)
-        The length of each axis of the ellipsoid of inertia determined
-        by the principal moments given. The values are sorted in descending
-        order.
+    a, b, c : float
+        The length of the a, b and c axis of the ellipsoid having the same 
+        inertia moments as that of the input body. 
     """
-    axes_length = list()
-    for pm in principal_moments:
-        axes_length.append(2/(np.sqrt(pm)))
-    axes_length.sort(reverse = True)
-    return axes_length
+    a = np.sqrt(5*(B + C - A)/M)
+    b = np.sqrt(5*(A + C - B)/M)
+    c = np.sqrt(5*(A + B - C)/M)
+    
+    return a, b, c
 
 def cross_moment(coordinates_a, coordinates_b, mass_distro, order_a = 2, 
                  order_b = 2, central = False):

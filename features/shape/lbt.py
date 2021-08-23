@@ -15,8 +15,9 @@ References
 [2] Blott, S.J., Pye, K. Particle shape: A review and new methods of 
     characterization and classification (2008) Sedimentology, 55 (1), pp. 31-63.
 """
+import numpy as np
 
-from radiomics_pg.utilities.geometry import axes_length_inertia_ellipsoid
+from radiomics_pg.utilities.geometry import axes_inertia_equivalent_ellipsoid
 
 def lbt_index(roi, index, mode):
     """Shape indices based on length, breadth and thickness.
@@ -46,6 +47,12 @@ def lbt_index(roi, index, mode):
         The value of the requested index.
     """
     
+    def _inertia_to_lbt(A, B, C, M):
+        a, b, c = axes_inertia_equivalent_ellipsoid(A, B, C, M)
+        l, b, t = np.sort(np.array([a, b, c]))[::-1]
+        return l, b, t
+        
+    
     #Compute length, breadth and thickness
     l, b, t = None, None, None
     if mode == 'aabb':
@@ -53,11 +60,15 @@ def lbt_index(roi, index, mode):
         dims.sort(reverse = True)
         l, b, t = dims
     elif mode == 'mask':
-        l, b, t = axes_length_inertia_ellipsoid(
-            roi.get_radii_of_gyration(mode = 'mask'))
+        A, B, C = roi.get_principal_moments_mask()
+        M = np.sum(roi.get_mask().flatten())
+        l, b, t = _inertia_to_lbt(A, B, C, M)
     elif  mode == 'signal':
-        l, b, t = axes_length_inertia_ellipsoid(
-            roi.get_radii_of_gyration(mode = 'signal'))
+        A, B, C = roi.get_principal_moments_signal()
+        M = np.sum(np.multiply(roi.get_mask(), roi.get_signal(zero_min = True))\
+                   .flatten())
+        l, b, t = _inertia_to_lbt(A, B, C, M)
+
     else:
         raise Exception(f'Mode *{mode}* not supported')
     
