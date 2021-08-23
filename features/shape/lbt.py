@@ -96,6 +96,8 @@ def _lbt_index(a, b, c, index):
             - 'krumbein-spericity' (Krumbein sphericity)
             - 'mps' (Maximum projection sphericity)
             - 'oblate-prolate' (Oblate-prolate index)
+            - 'lt-percent-diff' (Percentage difference between length and
+                                 thickness)
             - 'thickness-to-breadth' (thickness/breadth ratio, represents a
                measure of flatness [2])
             - 'thickness-to-length' (thickness/length ratio, represents a
@@ -116,11 +118,18 @@ def _lbt_index(a, b, c, index):
     elif index == 'csi':
         value = c / ((a * b) ** (1/2))
     elif index == 'disc-rod':
-        value = (a - b)/(a - c)
+        threshold = 1.0
+        lt_perc_diff = _lbt_index(a, b, c, 'lt-percent-diff')
+        if lt_perc_diff <= threshold:
+            value = 1.0
+        else:
+            value = (a - b)/(a - c)
     elif index == 'krumbein-sphericity':
         value = ((c * b) / (a ** 2)) ** (1/3)   
     elif index == 'mps':
         value = (c**2 / (a*b)) ** (1/3)
+    elif index == 'lt-percent-diff':
+        value = 100 * np.abs(a - c)/np.mean([a,c])
     elif index == 'oblate-prolate':
         value = 10 * ((a - b)/(a - c) - 1/2) / (c/a) 
     elif index == 'thickness-to-breadth':
