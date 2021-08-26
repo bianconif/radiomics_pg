@@ -32,14 +32,15 @@ def lbt_index(roi, index, mode):
     mode : str
         The modality used to compute the length, breadth and thickness of the 
         ROI. Possible values are:
-            'aabb' -> length, breadth and thickness are those of the axis-aligned
-            bounding box;
-            'mask' -> length, breadth and thickness are respectively the length 
-            (sorted in descending order) of the three axes of the ellipsoid of 
-            inertia computed on the mask (non signal-wighted);
-            'signal' -> length, breadth and thickness are respectively the length 
-            (sorted in descending order) of the three axes of the ellipsoid of 
-            inertia computed on the signal-weighted mask.
+            'aabb'  (axis-aligned bounding box). Length, breadth and thickness 
+                    are those of the axis-aligned bounding box.
+            'ae'    (non signal-weighted approximating ellipsoid). Length,
+                    breadth and thickness are the axes of an ellipsoid with the 
+                    same inertia as the mask, where each voxel is given
+                    weight '1'.
+            'swae'  (signal-weighted approximating ellipsoid) Length,
+                    breadth and thickness are the axes of an ellipsoid with the 
+                    same inertia as the signal-weighted mask.
             
     Returns
     -------
@@ -59,11 +60,11 @@ def lbt_index(roi, index, mode):
         dims = list(roi.get_roi_dimensions())
         dims.sort(reverse = True)
         l, b, t = dims
-    elif mode == 'mask':
+    elif mode == 'ae':
         A, B, C = roi.get_principal_moments_mask()
         M = np.sum(roi.get_mask().flatten())
         l, b, t = _inertia_to_lbt(A, B, C, M)
-    elif  mode == 'signal':
+    elif  mode == 'swae':
         A, B, C = roi.get_principal_moments_signal()
         M = np.sum(np.multiply(roi.get_mask(), roi.get_signal(zero_min = True))\
                    .flatten())
@@ -131,7 +132,12 @@ def _lbt_index(a, b, c, index):
     elif index == 'lt-percent-diff':
         value = 100 * np.abs(a - c)/np.mean([a,c])
     elif index == 'oblate-prolate':
-        value = 10 * ((a - b)/(a - c) - 1/2) / (c/a) 
+        threshold = 1.0
+        lt_perc_diff = _lbt_index(a, b, c, 'lt-percent-diff')
+        if lt_perc_diff <= threshold:
+            value = 1.0
+        else:        
+            value = 10 * ((a - b)/(a - c) - 1/2) / (c/a) 
     elif index == 'thickness-to-breadth':
         value = c/b 
     elif index == 'thickness-to-length':
