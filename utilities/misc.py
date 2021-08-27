@@ -405,22 +405,59 @@ class Roi():
         
         return *retval,
     
-    def draw_mesh(self, fig):
+    def draw_mesh(self, fig, other_elems=None):
         """Draw the triangular mesh on a Matplotlib figure
         
         Parameters
         ----------
         fig : matplotlib.pyplot.figure
             The matplotlib figure object where to show the mesh
+        other_elems : list of str (optional)
+            Other elements to show. Can contain one or more of the following:
+                'aabb' -> The axis-aligned bounding box
         """
         
         #Draw the triangular mesh on the input figure and retrieve the axis
         ax = self.get_mask_mesh().draw(fig)
         
+        #Show additional elements if requested
+        if other_elems:
+            if 'aabb' in other_elems:
+                self._draw_aabb(ax)
+        
         #Set the axis labels
         ax.set_xlabel(u"Right \u2190 \u2192 Left [mm]")
         ax.set_ylabel(u"Ventral \u2190 \u2192 Dorsal [mm]")
         ax.set_zlabel(u"Caudal \u2190 \u2192 Cranial [mm]") 
+        
+    def _draw_aabb(self, ax):
+        """Draw the axis-aligned bounding box on top of the mesh
+        
+        Parameters
+        ----------
+        ax : matplotlib.pyplot.axis
+            The axis object where bounding box will be drawn.
+        """
+        
+        #Get the dimensions of the aabb
+        x_length, y_length, z_length = self.get_roi_dimensions()
+        
+        #Vertices of the bounding box
+        verts = [[0,0,0], [x_length,0,0], [x_length,y_length,0], 
+                 [0,y_length,0], [0,0,z_length], [x_length,0,z_length], 
+                 [x_length,y_length,z_length], [0,y_length,z_length]]
+        verts = np.array(verts)
+        
+        #Edges of the bounding box
+        edges = [(0,1), (1,2), (2,3), (3,0),
+                 (4,5), (5,6), (6,7), (7,4), 
+                 (0,4), (1,5), (2,6), (3,7)]
+                
+        #Draw the edges
+        for edge in edges:
+            ax.plot(xs = verts[edge,0], ys = verts[edge,1], 
+                    zs = verts[edge,2])
+        
         
     def export_mesh_to_stl(self, destination):
         """Exports the triangular mesh to an STL file (ASCII format)

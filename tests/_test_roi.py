@@ -23,8 +23,8 @@ for patient_id in patient_ids:
         diagnosis['Diagnosis'] = data['Diagnosis']
     
 
-    roi = Roi.from_dcm_and_nii(mask_file, scan_folder, diagnosis = diagnosis)
-    roi.save(f'tests/roi/{patient_id}.pkl')
+    #roi = Roi.from_dcm_and_nii(mask_file, scan_folder, diagnosis = diagnosis)
+    #roi.save(f'tests/roi/{patient_id}.pkl')
     roi_1 = Roi.from_pickle(source = f'tests/roi/{patient_id}.pkl')
     
     #Dump the roi as bitmap
@@ -35,7 +35,7 @@ for patient_id in patient_ids:
 
     #Show the triangular mesh
     fig = plt.figure(figsize=(10, 10))
-    roi_1.draw_mesh(fig)
+    roi_1.draw_mesh(fig, other_elems='aabb')
     #tm = roi_1.get_mask_mesh()
     #tm.draw(fig)
     plt.tight_layout()
