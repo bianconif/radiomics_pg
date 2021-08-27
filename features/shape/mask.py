@@ -41,7 +41,7 @@ def volume_density(roi):
     vdensity : float
         The volume density (dimensionless units).
     """
-    _, roi_volume = roi.get_roi_volume()
+    _, roi_volume = roi.get_volume()
     return roi.get_voxel_volume()/roi_volume
 
 def area_density(roi):
@@ -80,7 +80,7 @@ def length_breadth_thickness(roi):
     lbt : float(3)
         The length, breadth and thickness of the ROI
     """
-    dimensions = roi.get_roi_dimensions()
+    dimensions = roi.get_dimensions()
     lbt = np.sort(np.array(dimensions))
     return tuple(reversed(lbt))
 

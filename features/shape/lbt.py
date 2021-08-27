@@ -57,7 +57,7 @@ def lbt_index(roi, index, mode):
     #Compute length, breadth and thickness
     l, b, t = None, None, None
     if mode == 'aabb':
-        dims = list(roi.get_roi_dimensions())
+        dims = list(roi.get_dimensions())
         dims.sort(reverse = True)
         l, b, t = dims
     elif mode == 'ae':

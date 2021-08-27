@@ -319,7 +319,7 @@ class Roi():
     def z(self):
         return self._geometry[:,:,:,2]    
     
-    def get_roi_dimensions(self):
+    def get_dimensions(self):
         """Returns the dimensions of the ROI along the axial, sagittal and coronal
         axis
         
@@ -341,7 +341,7 @@ class Roi():
         
         return roi_dimensions
     
-    def get_roi_volume(self):
+    def get_volume(self):
         """Returns the volume of the axis-aligned bounding box
         
         Returns
@@ -370,7 +370,7 @@ class Roi():
             The voxel volume.
         """
         
-        volumes, _ = self.get_roi_volume()
+        volumes, _ = self.get_volume()
         valid_volumes = self.get_mask() * volumes
         voxel_volume = np.sum(valid_volumes.flatten())
         
@@ -447,7 +447,7 @@ class Roi():
         """
         
         #Get the dimensions of the aabb
-        x_length, y_length, z_length = self.get_roi_dimensions()
+        x_length, y_length, z_length = self.get_dimensions()
         
         #Vertices of the bounding box
         verts = [[0,0,0], [x_length,0,0], [x_length,y_length,0], 
