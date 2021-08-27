@@ -280,10 +280,15 @@ class TriangularMesh():
         #Pad zeros around the mask to avoid border effects
         padded_mask = np.pad(array = mask, pad_width = 1, mode = 'constant')
         
+        #Compensate for the additional volume consequent to the padding
+        shape_diff = np.array(padded_mask.shape)/np.array(mask.shape)
+        comp_factor = 1/shape_diff
+        
         verts, faces, normals, _ = marching_cubes(volume = padded_mask, 
                                                   level = 0.5,
-                                                  spacing = spacing, 
+                                                  spacing = spacing*comp_factor, 
                                                   allow_degenerate = False)
+        verts = verts[:,(1,0,2)]
         
         return TriangularMesh(verts, faces, normals)
         
