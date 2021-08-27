@@ -325,13 +325,20 @@ class Roi():
         
         Returns
         -------
-        roi_dimensions : float (3)
+        roi_dimensions : np array of float (3)
             The dimensions of the ROI respectively along the coronal, sagittal
             and axial directions.
         """
+        
+        #Distance between the centroids of the most apart voxels
         roi_dimensions = (np.abs(self.x[-1,-1,-1] - self.x[0,0,0]),
                           np.abs(self.y[-1,-1,-1] - self.y[0,0,0]),
                           np.abs(self.z[-1,-1,-1] - self.z[0,0,0]))
+        roi_dimensions = np.array(roi_dimensions)
+        
+        #Take into account the (average) dimension of one the voxel
+        roi_dimensions = roi_dimensions + np.array(self.get_average_spacing())
+        
         return roi_dimensions
     
     def get_roi_volume(self):
