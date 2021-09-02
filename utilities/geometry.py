@@ -416,14 +416,7 @@ class TriangularMesh():
         xC = self.verts[self.faces[:,2],0]
         yC = self.verts[self.faces[:,2],1]
         zC = self.verts[self.faces[:,2],2]
-        
-        #Triangles' centroids
-        G = np.zeros((self.faces.shape[0],3))
-        origin = np.zeros((self.faces.shape[0],3))
-        G[:,0] = (xA + xB + xC)/3 
-        G[:,1] = (yA + yB + yC)/3 
-        G[:,2] = (zA + zB + zC)/3        
-                        
+                                
         #Compute the volume of each tetrahedron
         AB = np.zeros((self.faces.shape[0],3))
         AO = np.zeros((self.faces.shape[0],3))
@@ -449,7 +442,7 @@ class TriangularMesh():
         dot_prods = np.einsum('ij,ij->i', AB_outer_AC, AO)
         
         #From the dot products get the sign of the volume of each tetrahedron
-        signs = np.where(dot_prods > 0, 
+        signs = np.where(dot_prods < 0, 
                          np.ones(dot_prods.shape[0]),
                          -1 * np.ones(dot_prods.shape[0]))        
         
