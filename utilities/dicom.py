@@ -11,6 +11,8 @@ from pydicom.pixel_data_handlers.util import apply_modality_lut
 _dicom_lut = {
     'Age' : (0x10, 0x1010),
     'Gender' : (0x10, 0x40),
+    'ImagePositionPatient' : (0x20, 0x32),
+    'InstanceNumber' : (0x20, 0x13),
     'PixelSpacing' : (0x28, 0x30), 
     'PatientName' : (0x10, 0x10),
     'ScanOptions' : (0x18, 0x22),
@@ -123,7 +125,11 @@ def read(folder_name):
         row_spacing, column_spacing =\
             _get_value_of_generic_attribute(ds, 'PixelSpacing')
         slice_thickness = _get_value_of_generic_attribute(ds, 'SliceThickness')
-        slice_location = _get_slice_location(ds)
+        
+        #Get the image offset (x, y, and z coordinates of the upper left hand 
+        #corner of the image)
+        offset = get_attribute_value(dicom_loc, 'ImagePositionPatient')        
+        slice_location = offset[2]
         slice_locations.append(slice_location)
         
         #Get the raw data (generally uint16)
@@ -132,8 +138,8 @@ def read(folder_name):
         #Convert them to physical units
         data[:,:,i] = apply_modality_lut(raw_data, ds)
                   
-        retval[idxs[0],idxs[1],i,0] = column_spacing * (idxs[1] + 0.5)
-        retval[idxs[0],idxs[1],i,1] = row_spacing * (idxs[0] + 0.5)
+        retval[idxs[0],idxs[1],i,0] = column_spacing * (idxs[1] + 0.5) + offset[0]
+        retval[idxs[0],idxs[1],i,1] = row_spacing * (idxs[0] + 0.5) + offset[1]
         retval[:,:,i,2] = slice_location
         retval[idxs[0],idxs[1],i,3] = column_spacing
         retval[idxs[0],idxs[1],i,4] = row_spacing 
@@ -163,8 +169,10 @@ def get_attribute_value(source, attribute):
             'Surname'   -> Patient's surname
             
             **** Scan data ****
+            'InstanceNumber'  -> The number that identifies the image
             'PixelSpacing'    -> The in-plane pixel (voxel) spacing
             'ScanOptions'     -> The scan modality (e.g. helicoidal)
+            'SliceLocation'   -> The relative position of the image plane in mm
             'SliceThickness'  -> The slice thickness
             'StudyDate'       -> The scan acquisition date
             
@@ -184,6 +192,8 @@ def get_attribute_value(source, attribute):
         retval, _ = _get_name_and_surname(dicom_dict)
     elif attribute == 'Surname':
         _, retval = _get_name_and_surname(dicom_dict)   
+    elif attribute == 'ImagePositionPatient':
+        retval = _get_image_position_patient(dicom_dict)
     else:
         retval = _get_value_of_generic_attribute(dicom_dict, attribute)
     
@@ -270,6 +280,24 @@ def _get_name_and_surname(dicom_dict):
     retval = name_string.split("^", 2)
     retval.reverse()
     return retval
+
+def _get_image_position_patient(dicom_dict):
+    """Returns the x, y, and z coordinates of the upper left hand corner 
+    (center of the first voxel transmitted) of the image, in mm
+    
+    Parameters
+    ----------
+    dicom_dict : dict
+        The DICOM dictionary returned by pydicom.read_file()
+        
+    Returns
+    -------
+    image_pos : list of float (3)
+        The x, y, and z coordinates of the upper-left corner
+    """
+    image_pos = _get_value_of_generic_attribute(dicom_dict, 
+                                                'ImagePositionPatient')
+    return image_pos
 
 def _get_slice_location(dicom_dict):
     """Axial slice location
