@@ -427,9 +427,15 @@ class TriangularMesh():
         AC[:,0] = xC - xA
         AC[:,1] = yC - yA
         AC[:,2] = zC - zA
-        AO[:,0] = 0 - xA
-        AO[:,1] = 0 - yA
-        AO[:,2] = 0 - zA
+        
+        #Choose a pivot point external to the mesh
+        O = [np.min(self.verts[:,0]) - 1, 
+             np.min(self.verts[:,1]) - 1,
+             np.min(self.verts[:,2]) - 1]
+        
+        AO[:,0] = O[0] - xA
+        AO[:,1] = O[1] - yA
+        AO[:,2] = O[2] - zA
         
         #Volume of each tetrahedron = |AO . (AB x AC)|
         AB_outer_AC = np.zeros((self.faces.shape[0],3))
