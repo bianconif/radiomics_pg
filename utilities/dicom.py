@@ -102,13 +102,25 @@ def read(folder_name):
     for root, dirs, files in os.walk(folder_name):
         for file in files: 
             unsorted_list.append(os.path.join(root, file)) 
-            
-    #Create the empty signal matrix
+    
+    #***********************************************        
+    #******* Create the empty signal matrix ********
+    #***********************************************
+    
+    #Get the size
     ds = pydicom.read_file(unsorted_list[0], force=True)
     width, height = ds.pixel_array.shape
     depth = len(unsorted_list)
-    dtype = ds.pixel_array[0].dtype
+    
+    #Get the type
+    converted_data = apply_modality_lut(ds.pixel_array, ds)
+    dtype = converted_data.flatten()[0].dtype
+    
+    #Create the empty matrix
     data = np.zeros((height,width,depth), dtype = dtype)
+    #***********************************************
+    #***********************************************
+    #***********************************************
     
     #Create an empty box for the return values besides data
     retval = np.zeros((height,width,depth,6), dtype = np.float)
