@@ -94,7 +94,7 @@ def _lbt_index(a, b, c, index):
             - 'cailleux-flatness' (Cailleux flatness)
             - 'csi' (Corey shape index)
             - 'disc-rod' (Disc-rod index)
-            - 'krumbein-spericity' (Krumbein sphericity)
+            - 'krumbein-sphericity' (Krumbein sphericity)
             - 'mps' (Maximum projection sphericity)
             - 'oblate-prolate' (Oblate-prolate index)
             - 'lt-percent-diff' (Percentage difference between length and

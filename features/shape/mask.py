@@ -121,6 +121,21 @@ def compactness_1(roi):
     compactness = V / (np.pi**2 * A**(3/2))
     return compactness
 
+def surface_area(roi):
+    """The total area of the triangular mesh that approximates the region of interest
+    
+    Parameters
+    ----------
+    roi : Roi
+        The input roi.
+
+    Returns
+    -------
+    surface_area : float
+        The surface area
+    """
+    return roi.get_surface_area()
+
 def sphericity(roi):
     """Ratio between the surface area of a sphere with the same volume as the given 
     ROI and the surface area of the ROI (paragraph 3.1.8 of [1]).
