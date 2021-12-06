@@ -14,6 +14,9 @@ References
     (1993) Earth Surface Processes and Landforms, 18 (7), pp. 665-672.
 [2] Blott, S.J., Pye, K. Particle shape: A review and new methods of 
     characterization and classification (2008) Sedimentology, 55 (1), pp. 31-63.
+[3] Angelidakis, V., Nadimi, S., Utili, S. Elongation, flatness and compactness 
+    indices to characterise particle form (2022) Powder Technology, 396, 
+    pp. 689-695.
 """
 import numpy as np
 
@@ -89,6 +92,9 @@ def _lbt_index(a, b, c, index):
         dimensions of the ROI as well as the axes of the inertia ellipsoid.
     index : str
         A string indicating the index requested. Possible values are:
+            - 'angelidakis-elongation' ([3, eq. 5])
+            - 'angelidakis-flatness' ([3, eq. 5])
+            - 'angelidakis-compactness' ([3, eq. 5])
             - 'breadth-to-length' (breadth/length ratio, represents a measure
                of elongation [2])
             - 'cailleux-flatness' (Cailleux flatness)
@@ -112,7 +118,13 @@ def _lbt_index(a, b, c, index):
         The value of the shape index.
     """
     value = None
-    if index == 'breadth-to-length':
+    if index == 'angelidakis-elongation':
+        value = (a * c)/(a * c + b ** 2) - c/(a + c)
+    if index == 'angelidakis-flatness':
+        value = (b ** 2)/(a * c + b ** 2) - c/(a + c)
+    if index == 'angelidakis-compactness':
+        value = (2 * c)/(a + c)     
+    elif index == 'breadth-to-length':
         value = b/a
     elif index == 'cailleux-flatness':
         value = 1000 * (a + b) / (2 * c)
