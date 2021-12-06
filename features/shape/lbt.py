@@ -17,6 +17,8 @@ References
 [3] Angelidakis, V., Nadimi, S., Utili, S. Elongation, flatness and compactness 
     indices to characterise particle form (2022) Powder Technology, 396, 
     pp. 689-695.
+[4] Kong, D., Fonseca, J. Quantification of the morphology of shelly carbonate 
+    sands using 3D images (2018) Geotechnique, 68 (3), pp. 249-261
 """
 import numpy as np
 
@@ -137,6 +139,10 @@ def _lbt_index(a, b, c, index):
             value = 1.0
         else:
             value = (a - b)/(a - c)
+    elif index == 'kong-elongation':
+        value = 1 - b/a
+    elif index == 'kong-flatness':
+        value = 1 - c/b
     elif index == 'krumbein-sphericity':
         value = ((c * b) / (a ** 2)) ** (1/3)   
     elif index == 'mps':
