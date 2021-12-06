@@ -120,9 +120,9 @@ def _lbt_index(a, b, c, index):
     value = None
     if index == 'angelidakis-elongation':
         value = (a * c)/(a * c + b ** 2) - c/(a + c)
-    if index == 'angelidakis-flatness':
+    elif index == 'angelidakis-flatness':
         value = (b ** 2)/(a * c + b ** 2) - c/(a + c)
-    if index == 'angelidakis-compactness':
+    elif index == 'angelidakis-compactness':
         value = (2 * c)/(a + c)     
     elif index == 'breadth-to-length':
         value = b/a
