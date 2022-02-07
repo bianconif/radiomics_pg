@@ -10,7 +10,24 @@ References
 import numpy as np
 
 from radiomics_pg.features.shape.mask import max_3d_diameter
-#from radiomics_pg.utilities.misc import Roi
+
+def ibsi_elongation(roi):
+    """Elongation as defined in paragraph 3.1.16 of [1]
+    
+    Parameters
+    ----------
+    roi : Roi
+        The input roi.
+    
+    Returns
+    -------
+    elongation : float
+        The elongation (dimensionless units).
+    """
+    
+    l_major, l_minor, l_least = roi.get_principal_moments_mask()
+    elongation = np.sqrt(l_minor/l_major)
+    return elongation
 
 def ibsi_flatness(roi):
     """Flatness as defined in paragraph 3.1.16 of [1]
