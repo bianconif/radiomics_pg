@@ -476,6 +476,33 @@ class Roi():
         """
         self.get_mask_mesh().to_stl(destination)
         
+    def burst(self, out_folder):
+        """Exports the signal as three sets of bitmaps, one set for each
+        of the axial, coronal and sagittal directions
+        
+        Parameters
+        ----------
+        out_folder : str
+            The folder where to save the bitmaps.
+        """
+        
+        #Dump coronal slices
+        slice_indices = range(self._signal.shape[0])
+        for slice_index in slice_indices:
+            plt.imshow(self._signal[slice_index,:,:], cmap="gray")
+            plt.axis('off')
+            plt.savefig(f'{out_folder}/coronal--{slice_index:03d}.jpg', dpi=300, 
+                        bbox_inches='tight', pad_inches = 0) 
+            
+        #Dump sagittal slices
+        slice_indices = range(self._signal.shape[1])
+        for slice_index in slice_indices:
+            plt.imshow(self._signal[:,slice_index,:], cmap="gray")
+            plt.axis('off')
+            plt.savefig(f'{out_folder}/sagittal--{slice_index:03d}.jpg', dpi=300, 
+                        bbox_inches='tight', pad_inches = 0)        
+            
+        
     def dump_to_bitmaps(self, out_folder):
         """Exports the signal and mask as sets of bitmaps - one for each
         axial slice. Within each slice the values are normalised so that 
