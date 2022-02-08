@@ -121,6 +121,48 @@ def compactness_1(roi):
     compactness = V / (np.pi**2 * A**(3/2))
     return compactness
 
+def compactness_2(roi):
+    """Similarly to compactness_1, quantifies how sphere-like the volume is.
+    Defined in paragraph 3.1.6 of [1]. Surface area and volume are both
+    computed from the triangular mesh.
+    
+    Parameters
+    ----------
+    roi : Roi
+        The input roi.
+
+    Returns
+    -------
+    compactness : float
+        The compactness (dimensionless units).
+    """
+    
+    A = roi.get_surface_area()
+    V = roi.get_mesh_volume()
+    compactness = 36 * (np.pi) * (V**2) / (A**3)
+    return compactness
+
+def spherical_disproportion(roi):
+    """Similarly to compactness_1, quantifies how sphere-like the volume is.
+    Defined in paragraph 3.1.7 of [1]. Surface area and volume are both
+    computed from the triangular mesh.
+    
+    Parameters
+    ----------
+    roi : Roi
+        The input roi.
+
+    Returns
+    -------
+    spherical_disproportion : float
+        The spherical_disproportion (dimensionless units).
+    """
+    
+    A = roi.get_surface_area()
+    V = roi.get_mesh_volume()
+    spherical_disproportion = A / ((36 * np.pi * V**2) ** (1/3))
+    return spherical_disproportion
+
 def surface_area(roi):
     """The total area of the triangular mesh that approximates the region of interest
     
