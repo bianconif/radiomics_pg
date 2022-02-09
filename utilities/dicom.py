@@ -58,7 +58,7 @@ def read_metadata(folder_name, names = set(['Age', 'Gender'])):
             
     return metadata
  
-def read(folder_name):
+def read(folder_name, accepted_extensions = ['.dcm']):
     """Read data from a DICOM folder
     
     Parameters
@@ -66,6 +66,8 @@ def read(folder_name):
     folder_name : str
         The folder where the DICOM files are stored. Make sure the folder only
         contains DICOM files (the extension doesn't matter).
+    accepted_extensions : list of str
+        Discard the files whose extension is not in the list.
     
     Returns
     -------
@@ -101,7 +103,9 @@ def read(folder_name):
     #Walk through the files in the folder
     for root, dirs, files in os.walk(folder_name):
         for file in files: 
-            unsorted_list.append(os.path.join(root, file)) 
+            _, ext = os.path.splitext(file)
+            if ext in accepted_extensions:
+                unsorted_list.append(os.path.join(root, file)) 
     
     #***********************************************        
     #******* Create the empty signal matrix ********
