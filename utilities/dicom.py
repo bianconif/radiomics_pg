@@ -22,18 +22,19 @@ _dicom_lut = {
     'TubeVoltage' : (0x18, 0x60)
 }
 
-def read_metadata(folder_name, names = set(['Age', 'Gender'])):
-    """Read metadata from a DICOM folder. The metadata are retrieved from
-    the first .dcm file (in lexicographical order)
+def read_metadata(folder_name, names = set(['Age', 'Gender']), 
+                  accepted_extensions = ['.dcm']):
+    """Read metadata from a DICOM folder. 
     
     Parameters
     ----------
     folder_name : str
-        The folder where the DICOM files are stored. Make sure the folder only
-        contains DICOM files (the extension doesn't matter).
+        The folder where the DICOM files are stored.
     names : set of str
         The names of the metadata to retrieve. See _dicom_lut for possible
         values.
+    accepted_extensions : list of str
+        Discard the files with extension not in the list.
         
     Returns
     -------
@@ -64,10 +65,9 @@ def read(folder_name, accepted_extensions = ['.dcm']):
     Parameters
     ----------
     folder_name : str
-        The folder where the DICOM files are stored. Make sure the folder only
-        contains DICOM files (the extension doesn't matter).
+        The folder where the DICOM files are stored.
     accepted_extensions : list of str
-        Discard the files whose extension is not in the list.
+        Discard the files with extension not in the list.
     
     Returns
     -------
