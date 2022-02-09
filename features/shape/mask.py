@@ -198,6 +198,26 @@ def sphericity(roi):
     sphericity = ((36 * np.pi * V ** 2) ** (1/3))/A
     return sphericity
 
+def asphericity(roi):
+    """Ratio between the surface area of a sphere with the same volume as the given 
+    ROI and the surface area of the ROI (paragraph 3.1.9 of [1]).
+    
+    Parameters
+    ----------
+    roi : Roi
+        The input roi.
+
+    Returns
+    -------
+    asphericity : float
+        The asphericity (dimensionless units).
+    """
+    
+    A = roi.get_surface_area()
+    V = roi.get_mesh_volume()
+    asphericity = ((A ** 3) / (36 * np.pi * (V ** 2))) ** (1/3) - 1
+    return asphericity
+
 def max_3d_diameter(roi):
     """The distance between the centroid of the most apart voxels. Note that
     this definition is slightly different from that proposed in [1, par. 3.1.11]
