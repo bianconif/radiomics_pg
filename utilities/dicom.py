@@ -48,7 +48,9 @@ def read_metadata(folder_name, names = set(['Age', 'Gender']),
     dicoms = list()
     for root, dirs, files in os.walk(folder_name):
         for file in files: 
-            dicoms.append(file) 
+            _, ext = os.path.splitext(file)
+            if ext in accepted_extensions:            
+                dicoms.append(file) 
     dicoms.sort()
     
     #Read the metadata from the first file
