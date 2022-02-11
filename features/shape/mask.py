@@ -23,9 +23,25 @@ def voxel_volume(roi):
     Returns
     -------
     voxel_volume : float
-        The volume density (units: length^3).
+        The voxel volume (units: length^3).
     """    
     return roi.get_voxel_volume()
+
+def mesh_volume(roi):
+    """The volume enclosed by the triangular boundary mesh
+    (paragraph 3.1.1 of [1]).
+    
+    Parameters
+    ----------
+    roi : Roi
+        The input roi.
+    
+    Returns
+    -------
+    mesh_volume : float
+        The mesh volume (units: length^3).
+    """    
+    return roi.get_mesh_volume()
 
 def volume_density(roi):
     """Ratio between the volume of the mask and the volume of the axis-aligned
