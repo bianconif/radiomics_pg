@@ -1,20 +1,28 @@
 """Utility functions for extracting data from DICOM files"""
 import os
 
-import matplotlib.pyplot as plt
 import numpy as np
 
-import dateutil.parser
+import pandas as pd
 import pydicom
 from pydicom.pixel_data_handlers.util import apply_modality_lut
 
 _dicom_lut = {
-    'Age' : (0x10, 0x1010),
+    'Columns': (0x28, 0x11),
+    'AcquisitionDate' : (0x8, 0x22),
     'Gender' : (0x10, 0x40),
     'ImagePositionPatient' : (0x20, 0x32),
     'InstanceNumber' : (0x20, 0x13),
+    'Manufacturer': (0x8, 0x70),
+    'ManufacturerModelName': (0x8, 0x1090),
     'PixelSpacing' : (0x28, 0x30), 
+    'PatientAge': (0x10, 0x1010),
     'PatientName' : (0x10, 0x10),
+    'PatientSex': (0x10, 0x40),
+    'PatientSize': (0x10, 0x1020),
+    'PatientWeight': (0x10, 0x1030),
+    'PixelSpacing': (0x28, 0x30), 
+    'Rows': (0x28, 0x10),
     'ScanOptions' : (0x18, 0x22),
     'SliceLocation' : (0x20, 0x1041),
     'SliceThickness' : (0x18, 0x50),
@@ -22,42 +30,51 @@ _dicom_lut = {
     'TubeVoltage' : (0x18, 0x60)
 }
 
-def read_metadata(folder_name, names = set(['Age', 'Gender']), 
+def read_metadata(folder_name, attributes = set(['Age', 'Gender']), 
                   accepted_extensions = ['.dcm']):
-    """Read metadata from a DICOM folder. 
+    """Read metadata from a folder containing DICOM files. 
     
     Parameters
     ----------
     folder_name : str
         The folder where the DICOM files are stored.
-    names : set of str
-        The names of the metadata to retrieve. See _dicom_lut for possible
-        values.
+    attributes : set of str
+        The names of the dicom tags to retrieve. See 
+        _get_attribute_value_from_dcm for possible values.
     accepted_extensions : list of str
         Discard the files with extension not in the list.
         
     Returns
     -------
-    metadata : dict
-        A dictionary containing the requested metadata. The keys of the
-        dictionary are the elmenets of names
+    metadata : pd.DataFrame
+        A dataframe where rows correspond to DICOM files in the folder
+        and columns to DICOM tags.
     """
-    metadata = dict()
+    metadata = pd.DataFrame()
     
-    #Walk through the files in the folder
-    dicoms = list()
-    for root, dirs, files in os.walk(folder_name):
-        for file in files: 
-            _, ext = os.path.splitext(file)
-            if ext in accepted_extensions:            
-                dicoms.append(file) 
-    dicoms.sort()
+    #Get all the files in the source folder
+    dcm_files = os.listdir(path=folder_name)
+    dcm_files = [f for f in dcm_files if 
+                 os.path.isfile(f'{folder_name}/{f}')]
     
-    #Read the metadata from the first file
-    ds = pydicom.read_file(f'{folder_name}/{dicoms[0]}', force=True)  
-    for name in names:
-        value = _get_value_of_generic_attribute(ds, name)
-        metadata.update({name : value})
+    #Filter by extension
+    filtered_files = list()
+    for dcm_file in dcm_files: 
+        _, ext = os.path.splitext(dcm_file)
+        if ext in accepted_extensions:            
+            filtered_files.append(dcm_file)    
+    dcm_files = filtered_files
+    
+    for dcm_file in dcm_files:
+        dcm_record = dict()
+        dcm = pydicom.read_file(f'{folder_name}/{dcm_file}')
+        
+        for attribute in attributes:
+            tag_value = _get_attribute_value_from_dcm(dcm, attribute)
+            dcm_record.update({attribute: tag_value})
+    
+        metadata = pd.concat([metadata, 
+                              pd.DataFrame(data=dcm_record, index=[0])])
             
     return metadata
  
@@ -170,6 +187,58 @@ def read(folder_name, accepted_extensions = ['.dcm']):
         
     return data, *[retval[:,:,:,i] for i in range(retval.shape[3])]
 
+def _get_attribute_value_from_dcm(dicom_dict, attribute):
+    """Retrieve the attribute value from a pydicom.dataset.FileDataset
+    
+    Parameters
+    ----------
+    dcm : pydicom.dataset.FileDataset
+        An instance if pydicom.dataset.FileDataset
+    attribute : str
+        The attribute to retrieve. Possible values:
+            'Columns'
+            'ColSpacing' -> Space between columns 
+            'AcquisitionDate'
+            'Gender'
+            'ImagePositionPatient'
+            'InstanceNumber'
+            'Manufacturer'
+            'ManufacturerModelName'
+            'PixelSpacing' 
+            'PatientAge'
+            'PatientName'
+            'PatientSex'
+            'PatientSize'
+            'PatientWeight'
+            'PixelSpacing' 
+            'Rows'
+            'RowSpacing'
+            'ScanOptions'
+            'SliceLocation'
+            'SliceThickness'
+            'StudyDate'
+            'TubeVoltage'
+    
+    Returns
+    -------
+    value : str, int or float depending on the attribute requested
+        The attribute value
+    """
+    
+    value = None
+    
+    match attribute:
+        case 'ColSpacing':
+            value = _get_value_of_generic_attribute(
+                dicom_dict, attribute='PixelSpacing')[1]
+        case 'RowSpacing':
+            value = _get_value_of_generic_attribute(
+                dicom_dict, attribute='PixelSpacing')[0]
+        case _:
+            value = _get_value_of_generic_attribute(
+                dicom_dict, attribute=attribute)
+    return value
+
 def get_attribute_value(source, attribute):
     """Retrieve the attribute value from a DICOM file
     
@@ -178,25 +247,12 @@ def get_attribute_value(source, attribute):
     source : str
         Path to the DICOM source 
     attribute : str
-        String indicating the attribute of which the value is to be retrieved.
-        Possible values are:
-            **** Patient's data ****
-            'Age'       -> Patient's age
-            'Gender'    -> Patient's gender
-            'Name'      -> Patient's name
-            'Surname'   -> Patient's surname
-            
-            **** Scan data ****
-            'InstanceNumber'  -> The number that identifies the image
-            'PixelSpacing'    -> The in-plane pixel (voxel) spacing
-            'ScanOptions'     -> The scan modality (e.g. helicoidal)
-            'SliceLocation'   -> The relative position of the image plane in mm
-            'SliceThickness'  -> The slice thickness
-            'StudyDate'       -> The scan acquisition date
-            
-            **** CT specific data ****
-            'TubeVoltage'     -> The X-Ray tube voltage
-        
+        The attribute to retrieve. See _get_attribute_value_from_dcm for 
+        possible values.
+
+
+    Returns
+    ----------    
     value : 
         The attribute value
     """
@@ -316,6 +372,11 @@ def _get_image_position_patient(dicom_dict):
     image_pos = _get_value_of_generic_attribute(dicom_dict, 
                                                 'ImagePositionPatient')
     return image_pos
+
+def _get_pixel_spacing(dicom_dict):
+    row_spacing, col_spacing = _get_value_of_generic_attribute(
+        dicom_dict, 'PixelSpacing')
+    return row_spacing, col_spacing
 
 def _get_slice_location(dicom_dict):
     """Axial slice location
