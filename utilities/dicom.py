@@ -231,6 +231,8 @@ def _get_attribute_value_from_dcm(dicom_dict, attribute):
         case 'ColSpacing':
             value = _get_value_of_generic_attribute(
                 dicom_dict, attribute='PixelSpacing')[1]
+        case 'PatientAge':
+            value = _get_patient_age(dicom_dict)
         case 'RowSpacing':
             value = _get_value_of_generic_attribute(
                 dicom_dict, attribute='PixelSpacing')[0]
@@ -328,7 +330,7 @@ def _get_patient_age(dicom_dict):
     age : int
         The patient's age
     """
-    retval = _get_value_of_generic_attribute(dicom_dict, 'Age')
+    retval = _get_value_of_generic_attribute(dicom_dict, 'PatientAge')
     retval = int(retval.strip('Y'))
     return retval
     
