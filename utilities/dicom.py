@@ -13,6 +13,7 @@ _dicom_lut = {
     'Gender' : (0x10, 0x40),
     'ImagePositionPatient' : (0x20, 0x32),
     'InstanceNumber' : (0x20, 0x13),
+    'KVP': (0x18,0x60),
     'Manufacturer': (0x8, 0x70),
     'ManufacturerModelName': (0x8, 0x1090),
     'PixelSpacing' : (0x28, 0x30), 
@@ -22,10 +23,12 @@ _dicom_lut = {
     'PatientSize': (0x10, 0x1020),
     'PatientWeight': (0x10, 0x1030),
     'PixelSpacing': (0x28, 0x30), 
+    'ReconstructionMethod': (0x54,0x1103),
     'Rows': (0x28, 0x10),
     'ScanOptions' : (0x18, 0x22),
     'SliceLocation' : (0x20, 0x1041),
     'SliceThickness' : (0x18, 0x50),
+    'SpacingBetweenSlices': (0x18,0x88),
     'StudyDate' : (0x08, 0x20),
     'TubeVoltage' : (0x18, 0x60)
 }
@@ -196,28 +199,9 @@ def _get_attribute_value_from_dcm(dicom_dict, attribute):
         An instance if pydicom.dataset.FileDataset
     attribute : str
         The attribute to retrieve. Possible values:
-            'Columns'
-            'ColSpacing' -> Space between columns 
-            'AcquisitionDate'
-            'Gender'
-            'ImagePositionPatient'
-            'InstanceNumber'
-            'Manufacturer'
-            'ManufacturerModelName'
-            'PixelSpacing' 
-            'PatientAge'
-            'PatientName'
-            'PatientSex'
-            'PatientSize'
-            'PatientWeight'
-            'PixelSpacing' 
-            'Rows'
-            'RowSpacing'
-            'ScanOptions'
-            'SliceLocation'
-            'SliceThickness'
-            'StudyDate'
-            'TubeVoltage'
+            - 'ColSpacing' -> Space between columns 
+            - 'RowSpacing' -> Space between rows
+            - Any key of _dicom_lut dict
     
     Returns
     -------
@@ -259,22 +243,9 @@ def get_attribute_value(source, attribute):
         The attribute value
     """
     
-    retval = None 
     dicom_dict = pydicom.read_file(source)
+    return _get_attribute_value_from_dcm(dicom_dict, attribute)
     
-    if attribute == 'Age':
-        retval = _get_patient_age(dicom_dict)  
-    elif attribute == 'Name':
-        retval, _ = _get_name_and_surname(dicom_dict)
-    elif attribute == 'Surname':
-        _, retval = _get_name_and_surname(dicom_dict)   
-    elif attribute == 'ImagePositionPatient':
-        retval = _get_image_position_patient(dicom_dict)
-    else:
-        retval = _get_value_of_generic_attribute(dicom_dict, attribute)
-    
-    return retval
-
 def _get_value_of_generic_attribute(dicom_dict, attribute):
     """Get the value of a generic attribute
     
@@ -295,7 +266,7 @@ def _get_value_of_generic_attribute(dicom_dict, attribute):
     retval = None
     
     if attribute not in _dicom_lut.keys():
-        raise Exception('Attribute not supported') 
+        raise Exception(f'Attribute {attribute} not supported') 
     
     retval = dicom_dict[_dicom_lut[attribute]].value
     return retval
