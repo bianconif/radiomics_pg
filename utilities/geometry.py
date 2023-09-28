@@ -98,6 +98,44 @@ def moment(coordinates, mass_distro, order = 2, central = False):
     """            
     moment = cross_moment(coordinates, coordinates, mass_distro, order, central)
     return moment
+    
+def voxel_coordinates(data, voxel_size='unit'):
+    """Coordinates of the voxel centroids. The voxels are supposed square
+    and with unit side length. 
+    
+    Parameters
+    ----------
+    data : numpy array
+        The input data
+    voxel_size: 'unit' or array of int 
+        The length of the voxel side for each dimension in data. Need 
+        to be the same length as data. If 'unit' voxels are considered
+        isotropic with side length 1
+        
+    Returns
+    -------
+    centroid_coordinates: 
+        Coordinates of the voxels' centroids.
+    """
+    
+    if voxel_size == 'unit':
+        voxel_size = [1] * data.ndim
+    
+    
+    #Compute the 1-D coordinates of the voxels' centroids along each axis
+    coordinate_vectors = list()
+    for dim_size, side_length in zip(data.shape, voxel_size):
+        coordinates = np.linspace(
+            start=0 + side_length/2, 
+            stop=(dim_size - 1) * side_length + side_length/2,
+            num=dim_size
+        )
+        coordinate_vectors.append(coordinates)
+    
+    #Compute the N-D coordinates of the voxels' centroids along each axis
+    coordinates = np.meshgrid(*coordinate_vectors)
+    
+    return coordinates
         
 def centroid(coordinates, mass_distro):
     """Centroid of a discrete mass distribution
@@ -121,6 +159,30 @@ def centroid(coordinates, mass_distro):
 
     coordinate = moment(coordinates, mass_distro, order = 1)/np.sum(mass_distro)
     return coordinate
+
+def ball(data, center_idx, order):
+    """N-dimensional ball around a given voxel
+    
+    Parameters
+    ----------
+    data : numpy array
+        The input data
+    center_idx: array of int (length = dimension of data) 
+        Index of the voxel that represents the ball center.
+    order: {non-zero int, inf, -inf, 'fro', 'nuc'}
+        Order of the norm. See numpy.linalg.norm for details.
+        
+    Returns
+    -------
+    data_slice : nparray
+        The slice of the input data corresponding to the ball.
+    idxs : nparray
+        Indices corresponding to the slice (data_slice = data[idxs]). 
+    """
+
+        
+    
+    #**** To be implemented ****
 
 def bounding_box(data):
     """Bounding box for non-zero values in an n-dimensional array
