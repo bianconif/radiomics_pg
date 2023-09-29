@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.spatial import distance_matrix
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -114,8 +115,12 @@ def voxel_coordinates(data, voxel_size='unit'):
         
     Returns
     -------
-    centroid_coordinates: 
-        Coordinates of the voxels' centroids.
+    centroid_coordinates: list of ndarray
+        Coordinates of the voxels' centroids. Each element of the list
+        corresponds to one dimension of data. Therefore 
+        centroid_coordinates[0] are the centroid coordinates along the
+        first axis of data; centroid_coordinates[1] the centroid 
+        coordinates along the second axis of data, etc.
     """
     
     if voxel_size == 'unit':
@@ -133,7 +138,7 @@ def voxel_coordinates(data, voxel_size='unit'):
         coordinate_vectors.append(coordinates)
     
     #Compute the N-D coordinates of the voxels' centroids along each axis
-    coordinates = np.meshgrid(*coordinate_vectors)
+    coordinates = np.meshgrid(*coordinate_vectors, indexing='ij')
     
     return coordinates
         
@@ -160,7 +165,7 @@ def centroid(coordinates, mass_distro):
     coordinate = moment(coordinates, mass_distro, order = 1)/np.sum(mass_distro)
     return coordinate
 
-def ball(data, center_idx, order):
+def ball(data, center_idx, radius, order, voxel_size='unit'):
     """N-dimensional ball around a given voxel
     
     Parameters
@@ -169,21 +174,53 @@ def ball(data, center_idx, order):
         The input data
     center_idx: array of int (length = dimension of data) 
         Index of the voxel that represents the ball center.
-    order: {non-zero int, inf, -inf, 'fro', 'nuc'}
-        Order of the norm. See numpy.linalg.norm for details.
+    radius: float
+        The radius of the ball.
+    order: float, 1 <= p <= infinity
+        Order of the norm.
+    voxel_size: 'unit' or array of int 
+        The length of the voxel side for each dimension in data. Need 
+        to be the same length as data. If 'unit' voxels are considered
+        isotropic with side length 1
         
     Returns
     -------
-    data_slice : nparray
-        The slice of the input data corresponding to the ball.
-    idxs : nparray
-        Indices corresponding to the slice (data_slice = data[idxs]). 
+    mask: nparray of bool
+        The ball's mask, where True indicates 'in' the ball and False
+        'out' of the ball.
+    idxs: nparray
+        Indices where mask is True. 
+    data_slice: nparray
+        The slice of the input data corresponding to the ball's
+        bounding box.
     """
-
-        
     
-    #**** To be implemented ****
-
+    centroid_coordinates = voxel_coordinates(
+        data=data, voxel_size=voxel_size)
+    
+    #Rearrange the coordinate values for computing the distance matrix
+    M = np.zeros(shape=(data.size, data.ndim))
+    for dim_idx, dim in enumerate(data.shape):
+        M[:,dim_idx] = centroid_coordinates[dim_idx].flatten()
+           
+    N = np.zeros(shape=(1, data.ndim))
+    for dim_idx, dim in enumerate(data.shape):
+        N[0,dim_idx] = centroid_coordinates[dim_idx][center_idx]    
+    
+    #Compute and unsqueeze the distance matrix
+    dm = distance_matrix(x=N, y=M, p=order)
+    dm = np.reshape(a=dm, newshape=data.shape)
+    
+    #Compute the mask and the corresponding indices (where mask is True)
+    mask = (dm <= radius)
+    idxs = np.where(mask)
+    
+    #Compute the bounding box and the data slice
+    _, _, idxs = bounding_box(data=mask)
+    data_slice = data[idxs]
+    
+    return mask, idxs, data_slice
+    
 def bounding_box(data):
     """Bounding box for non-zero values in an n-dimensional array
     
