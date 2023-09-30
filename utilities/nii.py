@@ -2,8 +2,27 @@
 import nibabel as nib
 import numpy as np
 
+def save(data, filename):
+    """Save ndarray into a NIfTY file
+    
+    Parameters
+    ----------
+    data: ndarray
+        The data to save
+    filename : str
+        The path to the output file.   
+    """
+    affine = np.array(object = [[-1,0,0,0],
+                                [0,-1,0,0],
+                                [0,0,1,0],
+                                [0,0,0,1]])    
+    
+    data = np.transpose(data, axes = [1,0,2])
+    img = nib.Nifti1Image(dataobj=data, affine=affine)
+    img.to_filename(filename=filename)
+
 def read(filename):
-    """Read a NIfTY file
+    """Read a NIfTY file into a ndarray
     
     Parameters
     ----------
@@ -20,17 +39,7 @@ def read(filename):
     
     #Generate an array from the memory map
     data = np.array(memmap)
-    
-    #Read the axial location of each slice
-    slice_locations = list()
-    for s in range(data.shape[2]):
-        ras_coords = _get_ras_coordinates(voxel_coords = [0,0,s], img = img)
-        slice_locations.append(ras_coords[2])
-        
-    #Sort the data matrix by slice location
-    index_array = np.argsort(np.array(slice_locations))
-    data = data[:,:,index_array]    
-            
+                
     #Take the transpose to make the orientation coherent with DICOM reference
     #system
     data = np.transpose(data, axes = [1,0,2])
